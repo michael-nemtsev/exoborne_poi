@@ -1198,7 +1198,8 @@
             initMap();
 
             // Handle right-click event to show context menu
-            $('#game-map').on('contextmenu', function (e) {
+            //$('#game-map').on('contextmenu', function (e) {
+            $('#game-map').on('dblclick', function (e) {
                 e.preventDefault(); // Prevent the default context menu
 
                 const mapOffset = $('#game-map').offset();
