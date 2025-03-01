@@ -1269,19 +1269,28 @@
                 // We calculate from the top, then subtract from the total height to get from bottom
                 const mapY = Math.round(MAP_HEIGHT - ((e.pageY - mapOffset.top) / currentZoom));
 
-                // Keep coordinates within bounds
-                const boundedX = Math.max(0, Math.min(MAP_WIDTH, mapX));
-                const boundedY = Math.max(0, Math.min(MAP_HEIGHT, mapY));
+                // CHANGE THESE LINES to offset the coordinate system
+                // Add your custom offsets to change where (0,0) is located
+                const offsetX = 200; // Change this to your desired X offset
+                const offsetY = 300; // Change this to your desired Y offset
+
+                // Apply the offsets
+                const adjustedX = mapX - offsetX;
+                const adjustedY = mapY - offsetY;
+
+                // Keep coordinates within bounds (optional)
+                const boundedX = Math.max(-offsetX, Math.min(MAP_WIDTH - offsetX, adjustedX));
+                const boundedY = Math.max(-offsetY, Math.min(MAP_HEIGHT - offsetY, adjustedY));
 
                 // Update the display
                 $('#coordinates-display').text(`X: ${boundedX}, Y: ${boundedY}`);
             });
 
             // Also update coordinates during drag
-$('#game-map').on('mousemove', function(e) {
-    // Trigger the mousemove on the container to update coordinates
-    $('#map-container').trigger('mousemove');
-});
+            $('#game-map').on('mousemove', function (e) {
+                // Trigger the mousemove on the container to update coordinates
+                $('#map-container').trigger('mousemove');
+            });
 
         });
     </script>
