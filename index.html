@@ -452,6 +452,9 @@
     </div>
 
     <div id="map-container">
+        <div id="coordinates-display"
+            style="position: absolute; top: 10px; left: 10px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 5px 10px; border-radius: 4px; z-index: 20; font-size: 14px;">
+            X: 0, Y: 0</div>
         <div id="game-map"></div>
 
         <div class="map-controls">
@@ -1227,8 +1230,6 @@
                 }
             });
 
-
-
             // Update the color of the dropdown when changing type
             $('#context-poi-type').on('change', function () {
                 const selectedType = $(this).val();
@@ -1257,6 +1258,31 @@
                 const checked = $(this).prop('checked');
                 toggleGroupVisibility(type, checked);
             });
+
+            $('#map-container').on('mousemove', function (e) {
+                const mapOffset = $('#game-map').offset();
+
+                // Calculate coordinates relative to the map, adjusted for zoom and pan
+                const mapX = Math.round((e.pageX - mapOffset.left) / currentZoom);
+
+                // For Y coordinate, we need to flip it since we want 0 at the bottom
+                // We calculate from the top, then subtract from the total height to get from bottom
+                const mapY = Math.round(MAP_HEIGHT - ((e.pageY - mapOffset.top) / currentZoom));
+
+                // Keep coordinates within bounds
+                const boundedX = Math.max(0, Math.min(MAP_WIDTH, mapX));
+                const boundedY = Math.max(0, Math.min(MAP_HEIGHT, mapY));
+
+                // Update the display
+                $('#coordinates-display').text(`X: ${boundedX}, Y: ${boundedY}`);
+            });
+
+            // Also update coordinates during drag
+$('#game-map').on('mousemove', function(e) {
+    // Trigger the mousemove on the container to update coordinates
+    $('#map-container').trigger('mousemove');
+});
+
         });
     </script>
 </body>
