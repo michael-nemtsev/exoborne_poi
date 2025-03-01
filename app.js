@@ -3,7 +3,7 @@ const API_ENDPOINT = '/api'; // Replace with your actual API endpoint
 const MAP_WIDTH = 2000;
 const MAP_HEIGHT = 1430;
 const STORAGE_KEY = 'game_map_pois';
-const DEFAULT_ZOOM = 0.5;
+const DEFAULT_ZOOM = 1;
 
 // State management
 let pois = [];
@@ -25,10 +25,10 @@ function updateContextMenuHtml() {
         <label for="context-poi-type">Type:</label>
         <select id="context-poi-type">
           <option value="shelter">Rebirth Shelter</option>
+          <option value="bunker">Rebirth Bunker</option>
           <option value="fragment">Clearance Fragment</option>
-          <option value="dungeon">Dungeon</option>
-          <option value="resource">Resource</option>
-          <option value="landmark">Landmark</option>
+          <option value="machinery">Machinery Parts</option>
+          <option value="electronics">Electronics</option>
           <option value="npc">NPC</option>
           <option value="secret">Secret</option>
           <option value="boss">Boss</option>
@@ -108,7 +108,7 @@ function loadPoisFromFile() {
   showNotification('Loading POIs from file...');
   
   $.ajax({
-      url: 'pois.json',
+      url: 'pois/pois.json',
       method: 'GET',
       dataType: 'json',
       success: function(data) {
@@ -444,23 +444,25 @@ function saveContextMenuPoi() {
 
 // Add this function to save unapproved POIs to a different file
 function saveUnapprovedPoi(poi) {
-  $.ajax({
-      url: '/api/unapproved-pois',
-      method: 'POST',
-      data: JSON.stringify(poi),
-      contentType: 'application/json',
-      success: function(response) {
-          console.log('Unapproved POI saved to server');
-      },
-      error: function(xhr, status, error) {
-          console.error('Error saving unapproved POI:', error);
-          
-          // Store locally if server save fails
-          const unapprovedPois = JSON.parse(localStorage.getItem('unapproved_pois') || '[]');
-          unapprovedPois.push(poi);
-          localStorage.setItem('unapproved_pois', JSON.stringify(unapprovedPois));
-      }
-  });
+    $.ajax({
+        url: 'http://localhost:3000/api/save-poi',  // Updated URL to match server
+        method: 'POST',
+        data: JSON.stringify(poi),
+        contentType: 'application/json',
+        success: function(response) {
+            console.log('POI saved to file successfully');
+            showNotification('POI saved to draft file');
+        },
+        error: function(xhr, status, error) {
+            console.error('Error saving POI to file:', error);
+            showNotification('Failed to save POI to file', true);
+            
+            // Fallback to local storage if server save fails
+            const unapprovedPois = JSON.parse(localStorage.getItem('unapproved_pois') || '[]');
+            unapprovedPois.push(poi);
+            localStorage.setItem('unapproved_pois', JSON.stringify(unapprovedPois));
+        }
+    });
 }
 
 function saveEditedPoi() {
@@ -503,10 +505,18 @@ function renderPois() {
       `);
 
       // Show tooltip with approval status
-      marker.on('mouseenter', function () {
+      marker.on('mouseenter', function (e) {
           const approvalText = poi.approved ? '' : ' [Awaiting Approval]';
           tooltip.html(`${poi.description}${approvalText}`);
+          
+          // Calculate position above the marker
+          const markerRect = this.getBoundingClientRect();
+          const tooltipX = markerRect.left + (markerRect.width / 2);
+          const tooltipY = markerRect.top;
+          
           tooltip.css({
+              left: tooltipX + 'px',
+              top: tooltipY + 'px',
               visibility: 'visible',
               opacity: 1
           });
@@ -537,11 +547,11 @@ $('head').append(`
 function getPoiColor(type) {
   const normalizedType = String(type).toLowerCase().trim();
   switch (normalizedType) {
-    case 'shelter': return '#ffc107';
+    case 'shelter': return '#ff5252';
+    case 'bunker': return '#ff9800';
+    case 'machinery': return '#2e7d32';
     case 'fragment': return '#4caf50';
-    case 'dungeon': return '#f44336';
-    case 'resource': return '#2196f3';
-    case 'landmark': return '#9c27b0';
+    case 'electronics': return '#2196f3';
     case 'npc': return '#ff9800';
     case 'secret': return '#607d8b';
     case 'boss': return '#e91e63';
@@ -614,8 +624,15 @@ function toggleGroupVisibility(type, visible) {
 $(document).ready(function () {
   initMap();
 
-  // $('#game-map').on('contextmenu', function (e) {
-  $('#game-map').on('dblclick', function (e) {
+  // Add this new event listener for ESC key
+  $(document).on('keydown', function(e) {
+    if (e.key === 'Escape') {
+      $('#context-menu').hide();
+    }
+  });
+
+  $('#game-map').on('contextmenu', function (e) {
+  //$('#game-map').on('dblclick', function (e) {
     e.preventDefault();
     const mapOffset = $('#game-map').offset();
     const clickX = (e.pageX - mapOffset.left) / currentZoom;

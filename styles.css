@@ -57,14 +57,9 @@
   
   .poi-tooltip {
     position: fixed;
-    /* Fixed to always stay in place */
-    top: 10px;
-    /* Near the top of the screen */
-    left: 50%;
-    /* Center horizontally */
-    transform: translateX(-50%);
-    /* Ensure it is perfectly centered */
-    background-color: rgba(0, 0, 0, 0.85);
+    /* Change from fixed top position to dynamic positioning */
+    transform: translateX(-50%) translateY(-100%); /* Move tooltip above the marker */
+    background-color: #333;
     color: white;
     padding: 8px 12px;
     border-radius: 4px;
@@ -77,6 +72,7 @@
     pointer-events: none;
     text-align: center;
     min-width: 150px;
+    margin-top: -10px; /* Add some spacing between tooltip and marker */
   }
   
   .poi-marker.selected {
@@ -223,6 +219,10 @@
     font-weight: bold;
   }
   
+  .poi-group-header label {
+    padding-left: 5px;
+  }
+  
   #context-menu {
     position: absolute;
     display: none;
@@ -291,27 +291,22 @@
   /* Style for POI type dropdown in context menu to show colors */
   #context-poi-type option[value="shelter"] {
     background-color: #272727;
-    color: #ffc107;
+    color: #ff5252;
   }
   
-  #context-poi-type option[value="vendor"] {
+  #context-poi-type option[value="fragment"] {
     background-color: #272727;
     color: #4caf50;
   }
   
-  #context-poi-type option[value="dungeon"] {
+  #context-poi-type option[value="machinery"] {
     background-color: #272727;
-    color: #f44336;
+    color: #2e7d32;
   }
   
-  #context-poi-type option[value="resource"] {
+  #context-poi-type option[value="electronics"] {
     background-color: #272727;
     color: #2196f3;
-  }
-  
-  #context-poi-type option[value="landmark"] {
-    background-color: #272727;
-    color: #9c27b0;
   }
   
   #context-poi-type option[value="npc"] {
@@ -327,6 +322,11 @@
   #context-poi-type option[value="boss"] {
     background-color: #272727;
     color: #e91e63;
+  }
+  
+  #context-poi-type option[value="bunker"] {
+    background-color: #272727;
+    color: #ff9800;
   }
   
   #context-delete-btn {

@@ -21,10 +21,10 @@
       <label for="poi-type">Type:</label>
       <select id="poi-type">
         <option value="shelter">Rebirth Shelter</option>
+        <option value="bunker">Rebirth Bunker</option>
         <option value="fragment">Clearance Fragment</option>
-        <option value="dungeon">Dungeon</option>
-        <option value="resource">Resource</option>
-        <option value="landmark">Landmark</option>
+        <option value="machinery">Machinery Parts</option>
+        <option value="electronics">Electronics</option>
         <option value="npc">NPC</option>
         <option value="secret">Secret</option>
         <option value="boss">Boss</option>
@@ -41,7 +41,13 @@
             <div class="poi-group">
                 <div class="poi-group-header">
                     <input type="checkbox" id="group-shelter" class="group-checkbox" data-type="shelter" checked>
-                    <label for="group-shelter" style="color: #ffc107">Rebith Shelters</label>
+                    <label for="group-shelter" style="color: #ff5252">Rebirth Shelters</label>
+                </div>
+            </div>
+            <div class="poi-group">
+                <div class="poi-group-header">
+                    <input type="checkbox" id="group-bunker" class="group-checkbox" data-type="bunker" checked>
+                    <label for="group-bunker" style="color: #ff9800">Rebirth Bunker</label>
                 </div>
             </div>
             <div class="poi-group">
@@ -52,14 +58,14 @@
             </div>
             <div class="poi-group">
                 <div class="poi-group-header">
-                    <input type="checkbox" id="group-dungeon" class="group-checkbox" data-type="dungeon" checked>
-                    <label for="group-dungeon" style="color: #f44336">Dungeons</label>
+                    <input type="checkbox" id="group-dungeon" class="group-checkbox" data-type="machinery" checked>
+                    <label for="group-dungeon" style="color: #2e7d32">Machinery Parts</label>
                 </div>
             </div>
             <div class="poi-group">
                 <div class="poi-group-header">
-                    <input type="checkbox" id="group-resource" class="group-checkbox" data-type="resource" checked>
-                    <label for="group-resource" style="color: #2196f3">Resources</label>
+                    <input type="checkbox" id="group-resource" class="group-checkbox" data-type="electronics" checked>
+                    <label for="group-resource" style="color: #2196f3">Electronics</label>
                 </div>
             </div>
             <div class="poi-group">

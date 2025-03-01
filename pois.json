@@ -12,7 +12,7 @@
     {
         "id": "poi-2",
         "name": "POI2",
-        "type": "vendor",
+        "type": "fragment",
         "description": "Vendor point of interest",
         "x": 800,
         "y": 700,
@@ -22,8 +22,8 @@
     {
         "id": "poi-3",
         "name": "POI3",
-        "type": "dungeon",
-        "description": "Dungeon point of interest",
+        "type": "machinery",
+        "description": "Machinery Parts point of interest",
         "x": 1200,
         "y": 400,
         "visible": true,
@@ -32,8 +32,8 @@
     {
         "id": "poi-4",
         "name": "POI4",
-        "type": "resource",
-        "description": "Resource point of interest",
+        "type": "electronics",
+        "description": "Electronics point of interest",
         "x": 1500,
         "y": 800,
         "visible": true,
@@ -42,8 +42,8 @@
     {
         "id": "poi-5",
         "name": "POI5",
-        "type": "landmark",
-        "description": "Landmark point of interest",
+        "type": "bunker",
+        "description": "Rebirth Bunker point of interest",
         "x": 600,
         "y": 1300,
         "visible": true,
