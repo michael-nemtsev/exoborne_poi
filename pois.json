@@ -1,0 +1,20 @@
+[
+    {
+        "id": "poi-1",
+        "name": "POI1",
+        "type": "shelter",
+        "description": "Rebirth Shelters",
+        "x": 500,
+        "y": 500,
+        "visible": true
+    },
+    {
+        "id": "poi-2",
+        "name": "POI2",
+        "type": "fragment",
+        "description": "Clearance Framgments POI",
+        "x": 800,
+        "y": 700,
+        "visible": true
+    }
+]

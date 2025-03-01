@@ -476,81 +476,6 @@
         const STORAGE_KEY = 'game_map_pois';
         const DEFAULT_ZOOM = 0.5;
 
-        // State management
-        let pois = [
-            {
-                id: 'poi-1',
-                name: 'POI1',
-                type: 'shelter',
-                description: 'Shelters point of interest',
-                x: 500,
-                y: 500,
-                visible: true
-            },
-            {
-                id: 'poi-2',
-                name: 'POI2',
-                type: 'vendor',
-                description: 'Vendor point of interest',
-                x: 800,
-                y: 700,
-                visible: true
-            },
-            {
-                id: 'poi-3',
-                name: 'POI3',
-                type: 'dungeon',
-                description: 'Dungeon point of interest',
-                x: 1200,
-                y: 400,
-                visible: true
-            },
-            {
-                id: 'poi-4',
-                name: 'POI4',
-                type: 'resource',
-                description: 'Resource point of interest',
-                x: 1500,
-                y: 800,
-                visible: true
-            },
-            {
-                id: 'poi-5',
-                name: 'POI5',
-                type: 'landmark',
-                description: 'Landmark point of interest',
-                x: 600,
-                y: 1300,
-                visible: true
-            },
-            {
-                id: 'poi-6',
-                name: 'POI6',
-                type: 'npc',
-                description: 'NPC point of interest',
-                x: 900,
-                y: 1100,
-                visible: true
-            },
-            {
-                id: 'poi-7',
-                name: 'POI7',
-                type: 'secret',
-                description: 'Secret point of interest',
-                x: 1700,
-                y: 600,
-                visible: true
-            },
-            {
-                id: 'poi-8',
-                name: 'POI8',
-                type: 'boss',
-                description: 'Boss point of interest',
-                x: 1000,
-                y: 950,
-                visible: true
-            }
-        ];
         let currentZoom = DEFAULT_ZOOM;
         let isDragging = false;
         let dragStart = { x: 0, y: 0 };
@@ -559,6 +484,41 @@
         let tempPoi = null;
         let selectedPoi = null;
         let lastSyncTime = 0;
+
+        // Replace the hardcoded POIs array with an empty array
+        let pois = [];
+
+        // Add this function to load POIs from a text file
+        function loadPoisFromFile() {
+            // Show a notification that we're loading
+            showNotification('Loading POIs from file...');
+
+            // Use AJAX to fetch the file (assuming it's a JSON file)
+            $.ajax({
+                url: 'pois.json', // Path to your JSON file containing POIs
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    // Update the pois array with the loaded data
+                    pois = data;
+
+                    // Render the POIs on the map
+                    renderPois();
+
+                    // Save to local storage as a backup
+                    savePoisToStorage();
+
+                    showNotification('POIs loaded successfully');
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error loading POIs from file:', error);
+                    showNotification('Error loading POIs. Using local data.', true);
+
+                    // Fall back to local storage if available
+                    loadPoisFromStorage();
+                }
+            });
+        }
 
         // Update the context menu HTML structure
         function updateContextMenuHtml() {
@@ -642,8 +602,11 @@
             updateContextMenuHtml();
 
             // Load POIs
-            loadPoisFromStorage();
-            syncWithServer();
+            //loadPoisFromStorage();
+            //syncWithServer();
+
+            // Load POIs from file instead of storage
+            loadPoisFromFile();
         }
 
         // Map interaction functions
@@ -1104,22 +1067,24 @@
             }
         }
 
-        // Storage and sync functions
+        // Also modify the loadPoisFromStorage function to act as a fallback
         function loadPoisFromStorage() {
             const storedData = localStorage.getItem(STORAGE_KEY);
             if (storedData) {
                 try {
                     const data = JSON.parse(storedData);
-                    pois = data.pois || pois; // Use default pois if none in storage
+                    pois = data.pois || []; // Use empty array if none in storage
                     lastSyncTime = data.lastSyncTime || 0;
                     renderPois();
                 } catch (e) {
                     console.error('Error loading POIs from storage:', e);
-                    // If error loading, still render default POIs
+                    // If error loading, show default empty POIs
+                    pois = [];
                     renderPois();
                 }
             } else {
-                // If no storage data exists, save our default POIs
+                // If no storage data exists, initialize with empty array
+                pois = [];
                 savePoisToStorage();
                 renderPois();
             }

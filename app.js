@@ -6,80 +6,8 @@ const STORAGE_KEY = 'game_map_pois';
 const DEFAULT_ZOOM = 0.5;
 
 // State management
-let pois = [
-  {
-    id: 'poi-1',
-    name: 'POI1',
-    type: 'shelter',
-    description: 'Shelters point of interest',
-    x: 500,
-    y: 500,
-    visible: true
-  },
-  {
-    id: 'poi-2',
-    name: 'POI2',
-    type: 'vendor',
-    description: 'Vendor point of interest',
-    x: 800,
-    y: 700,
-    visible: true
-  },
-  {
-    id: 'poi-3',
-    name: 'POI3',
-    type: 'dungeon',
-    description: 'Dungeon point of interest',
-    x: 1200,
-    y: 400,
-    visible: true
-  },
-  {
-    id: 'poi-4',
-    name: 'POI4',
-    type: 'resource',
-    description: 'Resource point of interest',
-    x: 1500,
-    y: 800,
-    visible: true
-  },
-  {
-    id: 'poi-5',
-    name: 'POI5',
-    type: 'landmark',
-    description: 'Landmark point of interest',
-    x: 600,
-    y: 1300,
-    visible: true
-  },
-  {
-    id: 'poi-6',
-    name: 'POI6',
-    type: 'npc',
-    description: 'NPC point of interest',
-    x: 900,
-    y: 1100,
-    visible: true
-  },
-  {
-    id: 'poi-7',
-    name: 'POI7',
-    type: 'secret',
-    description: 'Secret point of interest',
-    x: 1700,
-    y: 600,
-    visible: true
-  },
-  {
-    id: 'poi-8',
-    name: 'POI8',
-    type: 'boss',
-    description: 'Boss point of interest',
-    x: 1000,
-    y: 950,
-    visible: true
-  }
-];
+let pois = [];
+
 let currentZoom = DEFAULT_ZOOM;
 let isDragging = false;
 let dragStart = { x: 0, y: 0 };
@@ -96,8 +24,8 @@ function updateContextMenuHtml() {
       <div class="context-menu-field">
         <label for="context-poi-type">Type:</label>
         <select id="context-poi-type">
-          <option value="shelter">Rebirth Shelters</option>
-          <option value="vendor">Vendor</option>
+          <option value="shelter">Rebirth Shelter</option>
+          <option value="fragment">Clearance Fragment</option>
           <option value="dungeon">Dungeon</option>
           <option value="resource">Resource</option>
           <option value="landmark">Landmark</option>
@@ -171,8 +99,40 @@ function initMap() {
   updateContextMenuHtml();
 
   // Load POIs
-  loadPoisFromStorage();
+  //loadPoisFromStorage();
+  loadPoisFromFile();
   syncWithServer();
+}
+
+function loadPoisFromFile() {
+  // Show a notification that we're loading
+  showNotification('Loading POIs from file...');
+  
+  // Use AJAX to fetch the file (assuming it's a JSON file)
+  $.ajax({
+      url: 'pois.json', // Path to your JSON file containing POIs
+      method: 'GET',
+      dataType: 'json',
+      success: function(data) {
+          // Update the pois array with the loaded data
+          pois = data;
+          
+          // Render the POIs on the map
+          renderPois();
+          
+          // Save to local storage as a backup
+          savePoisToStorage();
+          
+          showNotification('POIs loaded successfully');
+      },
+      error: function(xhr, status, error) {
+          console.error('Error loading POIs from file:', error);
+          showNotification('Error loading POIs. Using local data.', true);
+          
+          // Fall back to local storage if available
+          loadPoisFromStorage();
+      }
+  });
 }
 
 // Map interaction functions
@@ -511,7 +471,7 @@ function renderPois() {
         visibility: 'visible',
         opacity: 1
       });
-    });
+    });``
 
     marker.on('mouseleave', function () {
       tooltip.css({
@@ -528,7 +488,7 @@ function getPoiColor(type) {
   const normalizedType = String(type).toLowerCase().trim();
   switch (normalizedType) {
     case 'shelter': return '#ffc107';
-    case 'vendor': return '#4caf50';
+    case 'fragment': return '#4caf50';
     case 'dungeon': return '#f44336';
     case 'resource': return '#2196f3';
     case 'landmark': return '#9c27b0';
@@ -545,18 +505,22 @@ function getPoiColor(type) {
 function loadPoisFromStorage() {
   const storedData = localStorage.getItem(STORAGE_KEY);
   if (storedData) {
-    try {
-      const data = JSON.parse(storedData);
-      pois = data.pois || pois;
-      lastSyncTime = data.lastSyncTime || 0;
-      renderPois();
-    } catch (e) {
-      console.error('Error loading POIs from storage:', e);
-      renderPois();
-    }
+      try {
+          const data = JSON.parse(storedData);
+          pois = data.pois || []; // Use empty array if none in storage
+          lastSyncTime = data.lastSyncTime || 0;
+          renderPois();
+      } catch (e) {
+          console.error('Error loading POIs from storage:', e);
+          // If error loading, show default empty POIs
+          pois = [];
+          renderPois();
+      }
   } else {
-    savePoisToStorage();
-    renderPois();
+      // If no storage data exists, initialize with empty array
+      pois = [];
+      savePoisToStorage();
+      renderPois();
   }
 }
 
@@ -600,7 +564,8 @@ function toggleGroupVisibility(type, visible) {
 $(document).ready(function () {
   initMap();
 
-  $('#game-map').on('contextmenu', function (e) {
+  // $('#game-map').on('contextmenu', function (e) {
+  $('#game-map').on('dblclick', function (e) {
     e.preventDefault();
     const mapOffset = $('#game-map').offset();
     const clickX = (e.pageX - mapOffset.left) / currentZoom;
@@ -651,10 +616,28 @@ $(document).ready(function () {
 
   $('#map-container').on('mousemove', function (e) {
     const mapOffset = $('#game-map').offset();
+
+    // Calculate coordinates relative to the map, adjusted for zoom and pan
     const mapX = Math.round((e.pageX - mapOffset.left) / currentZoom);
+
+    // For Y coordinate, we need to flip it since we want 0 at the bottom
+    // We calculate from the top, then subtract from the total height to get from bottom
     const mapY = Math.round(MAP_HEIGHT - ((e.pageY - mapOffset.top) / currentZoom));
-    const boundedX = Math.max(0, Math.min(MAP_WIDTH, mapX));
-    const boundedY = Math.max(0, Math.min(MAP_HEIGHT, mapY));
+
+    // CHANGE THESE LINES to offset the coordinate system
+    // Add your custom offsets to change where (0,0) is located
+    const offsetX = 200; // Change this to your desired X offset
+    const offsetY = 300; // Change this to your desired Y offset
+
+    // Apply the offsets
+    const adjustedX = mapX - offsetX;
+    const adjustedY = mapY - offsetY;
+
+    // Keep coordinates within bounds (optional)
+    const boundedX = Math.max(-offsetX, Math.min(MAP_WIDTH - offsetX, adjustedX));
+    const boundedY = Math.max(-offsetY, Math.min(MAP_HEIGHT - offsetY, adjustedY));
+
+    // Update the display with the adjusted coordinates
     $('#coordinates-display').text(`X: ${boundedX}, Y: ${boundedY}`);
   });
 
