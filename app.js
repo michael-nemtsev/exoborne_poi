@@ -105,32 +105,53 @@ function initMap() {
 }
 
 function loadPoisFromFile() {
-  showNotification('Loading POIs from file...');
+  showNotification('Loading POIs from files...');
   
-  $.ajax({
+  // Load both approved and draft POIs
+  Promise.all([
+    // Load approved POIs
+    $.ajax({
       url: 'pois/pois.json',
       method: 'GET',
-      dataType: 'json',
-      success: function(data) {
-          // Process the POIs to ensure they have approval status
-          pois = data.map(poi => {
-              // Add approved status if it doesn't exist (backward compatibility)
-              if (poi.approved === undefined) {
-                  // Assume existing POIs are approved
-                  poi.approved = true;
-              }
-              return poi;
-          });
-          
-          renderPois();
-          savePoisToStorage();
-          showNotification('POIs loaded successfully');
-      },
-      error: function(xhr, status, error) {
-          console.error('Error loading POIs from file:', error);
-          showNotification('Error loading POIs. Using local data.', true);
-          loadPoisFromStorage();
-      }
+      dataType: 'json'
+    }).catch(error => {
+      console.error('Error loading approved POIs:', error);
+      return []; // Return empty array if file doesn't exist or has error
+    }),
+    
+    // Load draft POIs
+    $.ajax({
+      url: 'pois/pois-draft.json',
+      method: 'GET',
+      dataType: 'json'
+    }).catch(error => {
+      console.error('Error loading draft POIs:', error);
+      return []; // Return empty array if file doesn't exist or has error
+    })
+  ])
+  .then(([approvedPois, draftPois]) => {
+    // Process the POIs to ensure they have approval status
+    const processedApproved = approvedPois.map(poi => ({
+      ...poi,
+      approved: true // Ensure approved status for main POIs
+    }));
+
+    const processedDraft = draftPois.map(poi => ({
+      ...poi,
+      approved: false // Ensure unapproved status for draft POIs
+    }));
+
+    // Combine both arrays
+    pois = [...processedApproved, ...processedDraft];
+    
+    renderPois();
+    savePoisToStorage();
+    showNotification('POIs loaded successfully');
+  })
+  .catch(error => {
+    console.error('Error loading POIs:', error);
+    showNotification('Error loading POIs. Using local data.', true);
+    loadPoisFromStorage();
   });
 }
 
@@ -506,8 +527,8 @@ function renderPois() {
 
       // Show tooltip with approval status
       marker.on('mouseenter', function (e) {
-          const approvalText = poi.approved ? '' : ' [Awaiting Approval]';
-          tooltip.html(`${poi.description}${approvalText}`);
+          const approvalText = poi.approved ? '' : '<div class="approval-status">[Awaiting Approval]</div>';
+          tooltip.html(`<div class="tooltip-description">${poi.description}</div>${approvalText}`);
           
           // Calculate position above the marker
           const markerRect = this.getBoundingClientRect();

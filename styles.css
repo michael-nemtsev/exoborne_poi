@@ -57,8 +57,7 @@
   
   .poi-tooltip {
     position: fixed;
-    /* Change from fixed top position to dynamic positioning */
-    transform: translateX(-50%) translateY(-100%); /* Move tooltip above the marker */
+    transform: translateX(-50%) translateY(-100%);
     background-color: #333;
     color: white;
     padding: 8px 12px;
@@ -72,7 +71,18 @@
     pointer-events: none;
     text-align: center;
     min-width: 150px;
-    margin-top: -10px; /* Add some spacing between tooltip and marker */
+    margin-top: -10px;
+  }
+  
+  .tooltip-description {
+    margin-bottom: 4px;
+  }
+  
+  .approval-status {
+    font-size: 11px;
+    color: #9e9e9e;
+    text-align: center;
+    font-style: italic;
   }
   
   .poi-marker.selected {
