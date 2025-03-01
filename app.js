@@ -105,31 +105,30 @@ function initMap() {
 }
 
 function loadPoisFromFile() {
-  // Show a notification that we're loading
   showNotification('Loading POIs from file...');
   
-  // Use AJAX to fetch the file (assuming it's a JSON file)
   $.ajax({
-      url: 'pois.json', // Path to your JSON file containing POIs
+      url: 'pois.json',
       method: 'GET',
       dataType: 'json',
       success: function(data) {
-          // Update the pois array with the loaded data
-          pois = data;
+          // Process the POIs to ensure they have approval status
+          pois = data.map(poi => {
+              // Add approved status if it doesn't exist (backward compatibility)
+              if (poi.approved === undefined) {
+                  // Assume existing POIs are approved
+                  poi.approved = true;
+              }
+              return poi;
+          });
           
-          // Render the POIs on the map
           renderPois();
-          
-          // Save to local storage as a backup
           savePoisToStorage();
-          
           showNotification('POIs loaded successfully');
       },
       error: function(xhr, status, error) {
           console.error('Error loading POIs from file:', error);
           showNotification('Error loading POIs. Using local data.', true);
-          
-          // Fall back to local storage if available
           loadPoisFromStorage();
       }
   });
@@ -280,28 +279,35 @@ function savePoi() {
   if (!tempPoi) return;
 
   const poiType = $('#poi-type').val().trim();
+  const poiColor = getPoiColor(poiType);
+
   const poi = {
-    id: 'poi-' + Date.now(),
-    name: tempPoi.name,
-    type: poiType,
-    description: $('#poi-desc').val().trim(),
-    x: tempPoi.x,
-    y: tempPoi.y,
-    visible: true
+      id: 'poi-' + Date.now(),
+      name: tempPoi.name,
+      type: poiType,
+      description: $('#poi-desc').val().trim(),
+      x: tempPoi.x,
+      y: tempPoi.y,
+      visible: true,
+      approved: false, // Mark new POIs as unapproved
+      dateAdded: new Date().toISOString()
   };
 
   pois.push(poi);
   renderPois();
   savePoisToStorage();
+  
+  // Send unapproved POI to server
+  saveUnapprovedPoi(poi);
 
+  // Reset form and add mode
   $('#poi-form').hide();
   tempPoi = null;
   addMode = false;
   $('#add-mode-btn').removeClass('active');
   $('#game-map').css('cursor', 'move');
 
-  showNotification('POI added successfully');
-  syncWithServer(true);
+  showNotification('POI added successfully (awaiting approval)');
 }
 
 function cancelAddPoi() {
@@ -400,33 +406,61 @@ function showEditContextMenu(poiId, screenX, screenY) {
   $('#context-delete-btn').show();
 }
 
+// Same for the context menu
 function saveContextMenuPoi() {
   const contextMenu = $('#context-menu');
   const mapX = contextMenu.data('map-x');
   const mapY = contextMenu.data('map-y');
 
   const name = `POI-${Date.now().toString().slice(-4)}`;
-  const typeSelect = document.getElementById('context-poi-type');
-  const type = typeSelect ? typeSelect.value : 'shelter';
+  const type = document.getElementById('context-poi-type').value;
   const description = $('#context-poi-note').val().trim();
 
   const poi = {
-    id: 'poi-' + Date.now(),
-    name: name,
-    type: type,
-    description: description,
-    x: mapX,
-    y: mapY,
-    visible: true
+      id: 'poi-' + Date.now(),
+      name: name,
+      type: type,
+      description: description,
+      x: mapX,
+      y: mapY,
+      visible: true,
+      approved: false, // Mark new POIs as unapproved
+      dateAdded: new Date().toISOString()
   };
 
   pois.push(poi);
   renderPois();
   savePoisToStorage();
+  
+  // Send unapproved POI to server
+  saveUnapprovedPoi(poi);
+  
   contextMenu.hide();
-  showNotification('POI added successfully');
+  showNotification('POI added successfully (awaiting approval)');
+
+  // Select the new POI after adding it
   selectPoi(poi.id);
-  syncWithServer(true);
+}
+
+// Add this function to save unapproved POIs to a different file
+function saveUnapprovedPoi(poi) {
+  $.ajax({
+      url: '/api/unapproved-pois',
+      method: 'POST',
+      data: JSON.stringify(poi),
+      contentType: 'application/json',
+      success: function(response) {
+          console.log('Unapproved POI saved to server');
+      },
+      error: function(xhr, status, error) {
+          console.error('Error saving unapproved POI:', error);
+          
+          // Store locally if server save fails
+          const unapprovedPois = JSON.parse(localStorage.getItem('unapproved_pois') || '[]');
+          unapprovedPois.push(poi);
+          localStorage.setItem('unapproved_pois', JSON.stringify(unapprovedPois));
+      }
+  });
 }
 
 function saveEditedPoi() {
@@ -456,33 +490,49 @@ function renderPois() {
   $('body').append(tooltip);
 
   pois.filter(p => p.visible).forEach(poi => {
-    const poiColor = getPoiColor(poi.type);
-    const marker = $(`
-      <div class="poi-marker" data-id="${poi.id}" style="left: ${poi.x}px; top: ${poi.y}px;">
-        <svg viewBox="0 0 24 24">
-          <path fill="${poiColor}" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-        </svg>
-      </div>
-    `);
+      const poiColor = getPoiColor(poi.type);
+      
+      // Create POI marker with approval status indicator
+      const marker = $(`
+          <div class="poi-marker ${poi.approved ? 'approved' : 'unapproved'}" data-id="${poi.id}" style="left: ${poi.x}px; top: ${poi.y}px;">
+              <svg viewBox="0 0 24 24">
+                  <path fill="${poiColor}" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  ${!poi.approved ? '<circle cx="18" cy="6" r="5" fill="#ff5722" stroke="white" stroke-width="1" />' : ''}
+              </svg>
+          </div>
+      `);
 
-    marker.on('mouseenter', function () {
-      tooltip.text(poi.description);
-      tooltip.css({
-        visibility: 'visible',
-        opacity: 1
+      // Show tooltip with approval status
+      marker.on('mouseenter', function () {
+          const approvalText = poi.approved ? '' : ' [Awaiting Approval]';
+          tooltip.html(`${poi.description}${approvalText}`);
+          tooltip.css({
+              visibility: 'visible',
+              opacity: 1
+          });
       });
-    });``
 
-    marker.on('mouseleave', function () {
-      tooltip.css({
-        visibility: 'hidden',
-        opacity: 0
+      marker.on('mouseleave', function () {
+          tooltip.css({
+              visibility: 'hidden',
+              opacity: 0
+          });
       });
-    });
 
-    $('#game-map').append(marker);
+      $('#game-map').append(marker);
   });
 }
+
+$('head').append(`
+  <style>
+      .poi-marker.unapproved {
+          opacity: 0.7;
+      }
+      .poi-marker.unapproved svg {
+          filter: saturate(0.7);
+      }
+  </style>
+`);
 
 function getPoiColor(type) {
   const normalizedType = String(type).toLowerCase().trim();
@@ -505,22 +555,22 @@ function getPoiColor(type) {
 function loadPoisFromStorage() {
   const storedData = localStorage.getItem(STORAGE_KEY);
   if (storedData) {
-      try {
-          const data = JSON.parse(storedData);
-          pois = data.pois || []; // Use empty array if none in storage
-          lastSyncTime = data.lastSyncTime || 0;
-          renderPois();
-      } catch (e) {
-          console.error('Error loading POIs from storage:', e);
-          // If error loading, show default empty POIs
-          pois = [];
-          renderPois();
-      }
-  } else {
-      // If no storage data exists, initialize with empty array
-      pois = [];
-      savePoisToStorage();
+    try {
+      const data = JSON.parse(storedData);
+      pois = data.pois || []; // Use empty array if none in storage
+      lastSyncTime = data.lastSyncTime || 0;
       renderPois();
+    } catch (e) {
+      console.error('Error loading POIs from storage:', e);
+      // If error loading, show default empty POIs
+      pois = [];
+      renderPois();
+    }
+  } else {
+    // If no storage data exists, initialize with empty array
+    pois = [];
+    savePoisToStorage();
+    renderPois();
   }
 }
 
