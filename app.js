@@ -384,6 +384,32 @@ function showContextMenu(screenX, screenY, mapX, mapY) {
   const contextMenu = $('#context-menu');
   updateContextMenuHtml();
 
+  // Get dimensions
+  const menuWidth = contextMenu.outerWidth();
+  const menuHeight = contextMenu.outerHeight();
+  const windowWidth = $(window).width();
+  const windowHeight = $(window).height();
+
+  // Calculate position to keep menu within viewport
+  let posX = screenX;
+  let posY = screenY;
+
+  // Adjust X position if menu would go off screen
+  if (screenX + menuWidth > windowWidth) {
+    posX = windowWidth - menuWidth - 10; // 10px padding from edge
+  }
+  if (screenX < 0) {
+    posX = 10;
+  }
+
+  // Adjust Y position if menu would go off screen
+  if (screenY + menuHeight > windowHeight) {
+    posY = windowHeight - menuHeight - 10;
+  }
+  if (screenY < 0) {
+    posY = 10;
+  }
+
   $('#context-poi-type').val('shelter');
   $('#context-poi-note').val('');
   $('#context-delete-btn').hide();
@@ -393,8 +419,8 @@ function showContextMenu(screenX, screenY, mapX, mapY) {
   contextMenu.data('map-y', mapY);
 
   contextMenu.css({
-    top: screenY,
-    left: screenX
+    top: posY + 'px',
+    left: posX + 'px'
   }).show();
 
   $('#context-save-btn').off('click').on('click', saveContextMenuPoi);
@@ -414,13 +440,39 @@ function showEditContextMenu(poiId, screenX, screenY) {
   const contextMenu = $('#context-menu');
   updateContextMenuHtml();
 
+  // Get dimensions
+  const menuWidth = contextMenu.outerWidth();
+  const menuHeight = contextMenu.outerHeight();
+  const windowWidth = $(window).width();
+  const windowHeight = $(window).height();
+
+  // Calculate position to keep menu within viewport
+  let posX = screenX;
+  let posY = screenY;
+
+  // Adjust X position if menu would go off screen
+  if (screenX + menuWidth > windowWidth) {
+    posX = windowWidth - menuWidth - 10;
+  }
+  if (screenX < 0) {
+    posX = 10;
+  }
+
+  // Adjust Y position if menu would go off screen
+  if (screenY + menuHeight > windowHeight) {
+    posY = windowHeight - menuHeight - 10;
+  }
+  if (screenY < 0) {
+    posY = 10;
+  }
+
   $('#context-poi-type').val(poi.type);
   $('#context-poi-note').val(poi.description);
   contextMenu.data('poi-id', poiId);
 
   contextMenu.css({
-    top: screenY + 'px',
-    left: screenX + 'px',
+    top: posY + 'px',
+    left: posX + 'px',
     display: 'block'
   });
 
