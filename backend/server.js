@@ -11,8 +11,8 @@ app.use(cors());
 app.use(express.json());
 
 // Update file paths
-const POIS_FILE = path.join(__dirname, '../pois/pois.json');
-const DRAFT_FILE = path.join(__dirname, '../pois/pois-draft.json');
+const POIS_FILE = path.join(__dirname, 'pois/pois.json');
+const DRAFT_FILE = path.join(__dirname, 'pois/pois-draft.json');
 
 // Test endpoint
 app.get('/api/test', (req, res) => {
