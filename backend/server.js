@@ -13,6 +13,12 @@ app.use(express.json());
 // Serve static files from the root directory
 app.use(express.static(path.join(__dirname, '..')));
 
+// Log all requests for debugging
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
+
 // Add specific endpoint for pois.json
 app.get('/pois/pois.json', (req, res) => {
     const filePath = path.join(__dirname, '../pois/pois.json');
@@ -42,19 +48,54 @@ const DRAFT_FILE = path.join(__dirname, '../pois/pois-draft.json');
 // Ensure directories exist
 const poisDir = path.dirname(POIS_FILE);
 if (!fs.existsSync(poisDir)) {
-    fs.mkdirSync(poisDir, { recursive: true });
+    console.log(`Creating pois directory: ${poisDir}`);
+    try {
+        fs.mkdirSync(poisDir, { recursive: true });
+        console.log('Successfully created pois directory');
+    } catch (err) {
+        console.error('Error creating pois directory:', err);
+    }
 }
 
 // Initialize files if they don't exist
 [POIS_FILE, DRAFT_FILE].forEach(file => {
     if (!fs.existsSync(file)) {
-        fs.writeFileSync(file, '[]', 'utf8');
+        console.log(`Creating file: ${file}`);
+        try {
+            fs.writeFileSync(file, '[]', 'utf8');
+            console.log(`Successfully created file: ${file}`);
+        } catch (err) {
+            console.error(`Error creating file ${file}:`, err);
+        }
     }
 });
 
 // Test endpoint
 app.get('/api/test', (req, res) => {
     res.json({ message: 'Server is running!' });
+});
+
+// API endpoint to check pois directory
+app.get('/api/check-pois', (req, res) => {
+    const poisDir = path.join(__dirname, '../pois');
+    const exists = fs.existsSync(poisDir);
+    
+    let files = [];
+    if (exists) {
+        try {
+            files = fs.readdirSync(poisDir);
+        } catch (err) {
+            console.error('Error reading pois directory:', err);
+        }
+    }
+    
+    res.json({
+        poisDirExists: exists,
+        poisDirPath: poisDir,
+        files: files,
+        currentDir: __dirname,
+        rootDir: path.join(__dirname, '..')
+    });
 });
 
 // Health check endpoint for Azure

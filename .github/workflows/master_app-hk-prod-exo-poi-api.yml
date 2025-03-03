@@ -33,15 +33,25 @@ jobs:
       
       - name: List directories to verify content
         run: |
-          dir
-          dir pois
+          Get-ChildItem
+          if (Test-Path -Path "pois") {
+            Get-ChildItem -Path "pois"
+          } else {
+            Write-Host "pois directory not found"
+          }
       
       - name: Ensure pois directory exists
         run: |
-          if not exist pois mkdir pois
-          if not exist pois\pois.json echo [] > pois\pois.json
-          if not exist pois\pois-draft.json echo [] > pois\pois-draft.json
-          dir pois
+          if (-not (Test-Path -Path "pois")) {
+            New-Item -Path "pois" -ItemType Directory
+          }
+          if (-not (Test-Path -Path "pois\pois.json")) {
+            Set-Content -Path "pois\pois.json" -Value "[]"
+          }
+          if (-not (Test-Path -Path "pois\pois-draft.json")) {
+            Set-Content -Path "pois\pois-draft.json" -Value "[]"
+          }
+          Get-ChildItem -Path "pois"
       
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
