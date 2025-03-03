@@ -4,6 +4,12 @@ const cors = require('cors');
 const path = require('path');
 const app = express();
 
+// Log startup information
+console.log('Starting server...');
+console.log('Node version:', process.version);
+console.log('Current directory:', __dirname);
+console.log('Process directory:', process.cwd());
+
 // Enable CORS for all routes
 app.use(cors());
 
@@ -11,7 +17,9 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from the root directory
-app.use(express.static(path.join(__dirname, '..')));
+const staticPath = path.join(__dirname, '..');
+console.log('Static files path:', staticPath);
+app.use(express.static(staticPath));
 
 // Log all requests for debugging
 app.use((req, res, next) => {
@@ -22,6 +30,7 @@ app.use((req, res, next) => {
 // Add specific endpoint for pois.json
 app.get('/pois/pois.json', (req, res) => {
     const filePath = path.join(__dirname, '../pois/pois.json');
+    console.log('Attempting to serve pois.json from:', filePath);
     if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
     } else {
@@ -33,6 +42,7 @@ app.get('/pois/pois.json', (req, res) => {
 // Add specific endpoint for pois-draft.json
 app.get('/pois/pois-draft.json', (req, res) => {
     const filePath = path.join(__dirname, '../pois/pois-draft.json');
+    console.log('Attempting to serve pois-draft.json from:', filePath);
     if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
     } else {
@@ -72,7 +82,13 @@ if (!fs.existsSync(poisDir)) {
 
 // Test endpoint
 app.get('/api/test', (req, res) => {
-    res.json({ message: 'Server is running!' });
+    console.log('Test endpoint called');
+    res.json({ 
+        message: 'Server is running!',
+        nodeVersion: process.version,
+        currentDirectory: __dirname,
+        processDirectory: process.cwd()
+    });
 });
 
 // API endpoint to check pois directory
@@ -100,12 +116,24 @@ app.get('/api/check-pois', (req, res) => {
 
 // Health check endpoint for Azure
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'healthy' });
+    console.log('Health check endpoint called');
+    res.status(200).json({ 
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        nodeVersion: process.version
+    });
 });
 
 // Root endpoint - serve the HTML file instead of JSON response
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../default.html'));
+    const htmlPath = path.join(__dirname, '../default.html');
+    console.log('Attempting to serve default.html from:', htmlPath);
+    if (fs.existsSync(htmlPath)) {
+        res.sendFile(htmlPath);
+    } else {
+        console.error('default.html not found at:', htmlPath);
+        res.status(404).send('Homepage not found');
+    }
 });
 
 // Endpoint to save POIs

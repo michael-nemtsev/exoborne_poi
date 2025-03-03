@@ -33,11 +33,13 @@ jobs:
       
       - name: List directories to verify content
         run: |
-          Get-ChildItem
-          if (Test-Path -Path "pois") {
-            Get-ChildItem -Path "pois"
+          Get-ChildItem -Recurse
+          Write-Host "Checking backend/server.js exists:"
+          if (Test-Path -Path "backend/server.js") {
+            Write-Host "server.js exists"
+            Get-Content -Path "backend/server.js" -Head 5
           } else {
-            Write-Host "pois directory not found"
+            Write-Host "server.js not found!"
           }
       
       - name: Ensure pois directory exists
@@ -52,6 +54,24 @@ jobs:
             Set-Content -Path "pois\pois-draft.json" -Value "[]"
           }
           Get-ChildItem -Path "pois"
+      
+      - name: Verify web.config and .deployment
+        run: |
+          Write-Host "Checking web.config exists:"
+          if (Test-Path -Path "web.config") {
+            Write-Host "web.config exists"
+            Get-Content -Path "web.config" -Head 5
+          } else {
+            Write-Host "web.config not found!"
+          }
+          
+          Write-Host "Checking .deployment exists:"
+          if (Test-Path -Path ".deployment") {
+            Write-Host ".deployment exists"
+            Get-Content -Path ".deployment"
+          } else {
+            Write-Host ".deployment not found!"
+          }
       
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -81,6 +101,13 @@ jobs:
       - name: List directories to verify content
         run: |
           ls -la
+          echo "Checking backend/server.js exists:"
+          if [ -f backend/server.js ]; then
+            echo "server.js exists"
+            head -n 5 backend/server.js
+          else
+            echo "server.js not found!"
+          fi
           ls -la pois || echo "pois directory not found"
       
       - name: Ensure pois directory exists in deployment
@@ -89,6 +116,24 @@ jobs:
           [ -f pois/pois.json ] || echo '[]' > pois/pois.json
           [ -f pois/pois-draft.json ] || echo '[]' > pois/pois-draft.json
           ls -la pois
+      
+      - name: Verify web.config and .deployment
+        run: |
+          echo "Checking web.config exists:"
+          if [ -f web.config ]; then
+            echo "web.config exists"
+            head -n 5 web.config
+          else
+            echo "web.config not found!"
+          fi
+          
+          echo "Checking .deployment exists:"
+          if [ -f .deployment ]; then
+            echo ".deployment exists"
+            cat .deployment
+          else
+            echo ".deployment not found!"
+          fi
       
       - name: Login to Azure
         uses: azure/login@v2
