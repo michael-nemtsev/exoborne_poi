@@ -13,6 +13,28 @@ app.use(express.json());
 // Serve static files from the root directory
 app.use(express.static(path.join(__dirname, '..')));
 
+// Add specific endpoint for pois.json
+app.get('/pois/pois.json', (req, res) => {
+    const filePath = path.join(__dirname, '../pois/pois.json');
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        console.error('pois.json file not found at:', filePath);
+        res.status(404).json({ error: 'POIs file not found' });
+    }
+});
+
+// Add specific endpoint for pois-draft.json
+app.get('/pois/pois-draft.json', (req, res) => {
+    const filePath = path.join(__dirname, '../pois/pois-draft.json');
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        console.error('pois-draft.json file not found at:', filePath);
+        res.status(404).json({ error: 'POIs draft file not found' });
+    }
+});
+
 // Update file paths - ensure they exist
 const POIS_FILE = path.join(__dirname, '../pois/pois.json');
 const DRAFT_FILE = path.join(__dirname, '../pois/pois-draft.json');
@@ -86,6 +108,19 @@ const PORT = process.env.PORT || 8080; // Azure Web Apps expects 8080
 const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Test the server by visiting http://localhost:${PORT}/api/test`);
+    
+    // Log directory structure for debugging
+    console.log('Current directory:', __dirname);
+    console.log('Root directory:', path.join(__dirname, '..'));
+    
+    // Check if pois directory exists
+    const poisDir = path.join(__dirname, '../pois');
+    console.log('Pois directory exists:', fs.existsSync(poisDir));
+    
+    // List files in pois directory if it exists
+    if (fs.existsSync(poisDir)) {
+        console.log('Files in pois directory:', fs.readdirSync(poisDir));
+    }
 });
 
 // Handle graceful shutdown

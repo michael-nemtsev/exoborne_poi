@@ -36,6 +36,13 @@ jobs:
           dir
           dir pois
       
+      - name: Ensure pois directory exists
+        run: |
+          if not exist pois mkdir pois
+          if not exist pois\pois.json echo [] > pois\pois.json
+          if not exist pois\pois-draft.json echo [] > pois\pois-draft.json
+          dir pois
+      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
@@ -65,6 +72,13 @@ jobs:
         run: |
           ls -la
           ls -la pois || echo "pois directory not found"
+      
+      - name: Ensure pois directory exists in deployment
+        run: |
+          mkdir -p pois
+          [ -f pois/pois.json ] || echo '[]' > pois/pois.json
+          [ -f pois/pois-draft.json ] || echo '[]' > pois/pois-draft.json
+          ls -la pois
       
       - name: Login to Azure
         uses: azure/login@v2
