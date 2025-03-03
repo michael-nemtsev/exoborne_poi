@@ -17,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history to ensure all files are included
 
       - name: Set up Node.js version
         uses: actions/setup-node@v3
@@ -29,11 +31,19 @@ jobs:
           npm run build --if-present
           npm run test --if-present
       
+      - name: List directories to verify content
+        run: |
+          dir
+          dir pois
+      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: |
+            .
+            !node_modules/**
+            !.git/**
 
   deploy:
     runs-on: ubuntu-latest
@@ -50,6 +60,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
+      
+      - name: List directories to verify content
+        run: |
+          ls -la
+          ls -la pois || echo "pois directory not found"
       
       - name: Login to Azure
         uses: azure/login@v2

@@ -10,6 +10,9 @@ app.use(cors());
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Serve static files from the root directory
+app.use(express.static(path.join(__dirname, '..')));
+
 // Update file paths - ensure they exist
 const POIS_FILE = path.join(__dirname, '../pois/pois.json');
 const DRAFT_FILE = path.join(__dirname, '../pois/pois-draft.json');
@@ -37,9 +40,9 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'healthy' });
 });
 
-// Root endpoint
+// Root endpoint - serve the HTML file instead of JSON response
 app.get('/', (req, res) => {
-    res.json({ message: 'Exoborne POI API is running' });
+    res.sendFile(path.join(__dirname, '../default.html'));
 });
 
 // Endpoint to save POIs
