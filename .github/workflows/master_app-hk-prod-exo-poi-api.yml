@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - app-hk-prod-exo-poi-api
+name: Build and deploy Node.js API to Azure Web App - app-hk-prod-exo-poi-api
 
 on:
   push:
@@ -27,28 +27,28 @@ jobs:
 
       - name: npm install, build, and test
         run: |
+          cd api
           npm install
           npm run build --if-present
           npm run test --if-present
       
       - name: List directories to verify content
         run: |
+          cd api
           Get-ChildItem -Recurse
-          Write-Host "Checking backend/server.js exists:"
-          if (Test-Path -Path "backend/server.js") {
+          Write-Host "Checking src/server.js exists:"
+          if (Test-Path -Path "src/server.js") {
             Write-Host "server.js exists"
-            Get-Content -Path "backend/server.js" -Head 5
+            Get-Content -Path "src/server.js" -Head 5
           } else {
             Write-Host "server.js not found!"
           }
       
       - name: Ensure pois directory exists
         run: |
+          cd api
           if (-not (Test-Path -Path "pois")) {
             New-Item -Path "pois" -ItemType Directory
-          }
-          if (-not (Test-Path -Path "pois\pois.json")) {
-            Set-Content -Path "pois\pois.json" -Value "[]"
           }
           if (-not (Test-Path -Path "pois\pois-draft.json")) {
             Set-Content -Path "pois\pois-draft.json" -Value "[]"
@@ -57,6 +57,7 @@ jobs:
       
       - name: Verify web.config and .deployment
         run: |
+          cd api
           Write-Host "Checking web.config exists:"
           if (Test-Path -Path "web.config") {
             Write-Host "web.config exists"
@@ -78,9 +79,8 @@ jobs:
         with:
           name: node-app
           path: |
-            .
-            !node_modules/**
-            !.git/**
+            api/**
+            !api/node_modules/**
 
   deploy:
     runs-on: ubuntu-latest
@@ -97,14 +97,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
+          path: .
       
       - name: List directories to verify content
         run: |
           ls -la
-          echo "Checking backend/server.js exists:"
-          if [ -f backend/server.js ]; then
+          echo "Checking src/server.js exists:"
+          if [ -f src/server.js ]; then
             echo "server.js exists"
-            head -n 5 backend/server.js
+            head -n 5 src/server.js
           else
             echo "server.js not found!"
           fi
@@ -113,7 +114,6 @@ jobs:
       - name: Ensure pois directory exists in deployment
         run: |
           mkdir -p pois
-          [ -f pois/pois.json ] || echo '[]' > pois/pois.json
           [ -f pois/pois-draft.json ] || echo '[]' > pois/pois-draft.json
           ls -la pois
       

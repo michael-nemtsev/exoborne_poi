@@ -16,47 +16,17 @@ app.use(cors());
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Serve static files from the root directory
-const staticPath = path.join(__dirname, '..');
-console.log('Static files path:', staticPath);
-app.use(express.static(staticPath));
-
 // Log all requests for debugging
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
     next();
 });
 
-// Add specific endpoint for pois.json
-app.get('/pois/pois.json', (req, res) => {
-    const filePath = path.join(__dirname, '../pois/pois.json');
-    console.log('Attempting to serve pois.json from:', filePath);
-    if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
-    } else {
-        console.error('pois.json file not found at:', filePath);
-        res.status(404).json({ error: 'POIs file not found' });
-    }
-});
-
-// Add specific endpoint for pois-draft.json
-app.get('/pois/pois-draft.json', (req, res) => {
-    const filePath = path.join(__dirname, '../pois/pois-draft.json');
-    console.log('Attempting to serve pois-draft.json from:', filePath);
-    if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
-    } else {
-        console.error('pois-draft.json file not found at:', filePath);
-        res.status(404).json({ error: 'POIs draft file not found' });
-    }
-});
-
-// Update file paths - ensure they exist
-const POIS_FILE = path.join(__dirname, '../pois/pois.json');
+// Update file paths for POIs
 const DRAFT_FILE = path.join(__dirname, '../pois/pois-draft.json');
 
 // Ensure directories exist
-const poisDir = path.dirname(POIS_FILE);
+const poisDir = path.dirname(DRAFT_FILE);
 if (!fs.existsSync(poisDir)) {
     console.log(`Creating pois directory: ${poisDir}`);
     try {
@@ -67,24 +37,22 @@ if (!fs.existsSync(poisDir)) {
     }
 }
 
-// Initialize files if they don't exist
-[POIS_FILE, DRAFT_FILE].forEach(file => {
-    if (!fs.existsSync(file)) {
-        console.log(`Creating file: ${file}`);
-        try {
-            fs.writeFileSync(file, '[]', 'utf8');
-            console.log(`Successfully created file: ${file}`);
-        } catch (err) {
-            console.error(`Error creating file ${file}:`, err);
-        }
+// Initialize draft file if it doesn't exist
+if (!fs.existsSync(DRAFT_FILE)) {
+    console.log(`Creating file: ${DRAFT_FILE}`);
+    try {
+        fs.writeFileSync(DRAFT_FILE, '[]', 'utf8');
+        console.log(`Successfully created file: ${DRAFT_FILE}`);
+    } catch (err) {
+        console.error(`Error creating file ${DRAFT_FILE}:`, err);
     }
-});
+}
 
 // Test endpoint
 app.get('/api/test', (req, res) => {
     console.log('Test endpoint called');
     res.json({ 
-        message: 'Server is running!',
+        message: 'API Server is running!',
         nodeVersion: process.version,
         currentDirectory: __dirname,
         processDirectory: process.cwd()
@@ -93,7 +61,6 @@ app.get('/api/test', (req, res) => {
 
 // API endpoint to check pois directory
 app.get('/api/check-pois', (req, res) => {
-    const poisDir = path.join(__dirname, '../pois');
     const exists = fs.existsSync(poisDir);
     
     let files = [];
@@ -124,30 +91,32 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Root endpoint - serve the HTML file instead of JSON response
-app.get('/', (req, res) => {
-    const htmlPath = path.join(__dirname, '../default.html');
-    console.log('Attempting to serve default.html from:', htmlPath);
-    if (fs.existsSync(htmlPath)) {
-        res.sendFile(htmlPath);
+// Get draft POIs
+app.get('/api/pois-draft', (req, res) => {
+    console.log('Getting draft POIs');
+    if (fs.existsSync(DRAFT_FILE)) {
+        try {
+            const data = fs.readFileSync(DRAFT_FILE, 'utf8');
+            res.json(JSON.parse(data));
+        } catch (err) {
+            console.error('Error reading draft POIs:', err);
+            res.status(500).json({ error: 'Failed to read draft POIs', details: err.message });
+        }
     } else {
-        console.error('default.html not found at:', htmlPath);
-        res.status(404).send('Homepage not found');
+        res.json([]);
     }
 });
 
-// Endpoint to save POIs
+// Save POI to draft
 app.post('/api/save-poi', (req, res) => {
     console.log('Received POI request:', req.body);
 
     const poi = req.body;
-    const filePath = DRAFT_FILE;
-
     try {
         // Read existing POIs
         let pois = [];
-        if (fs.existsSync(filePath)) {
-            const fileContent = fs.readFileSync(filePath, 'utf8');
+        if (fs.existsSync(DRAFT_FILE)) {
+            const fileContent = fs.readFileSync(DRAFT_FILE, 'utf8');
             if (fileContent) {
                 pois = JSON.parse(fileContent);
             }
@@ -157,7 +126,7 @@ app.post('/api/save-poi', (req, res) => {
         pois.push(poi);
 
         // Save back to file
-        fs.writeFileSync(filePath, JSON.stringify(pois, null, 2));
+        fs.writeFileSync(DRAFT_FILE, JSON.stringify(pois, null, 2));
         console.log('Successfully saved POI');
         res.json({ success: true });
     } catch (err) {
@@ -175,7 +144,7 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.PORT || 8080; // Azure Web Apps expects 8080
 const server = app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`API Server running on port ${PORT}`);
     console.log(`Test the server by visiting http://localhost:${PORT}/api/test`);
     
     // Log directory structure for debugging
@@ -183,7 +152,6 @@ const server = app.listen(PORT, () => {
     console.log('Root directory:', path.join(__dirname, '..'));
     
     // Check if pois directory exists
-    const poisDir = path.join(__dirname, '../pois');
     console.log('Pois directory exists:', fs.existsSync(poisDir));
     
     // List files in pois directory if it exists
