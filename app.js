@@ -111,7 +111,7 @@ function loadPoisFromFile() {
   Promise.all([
     // Load approved POIs
     $.ajax({
-      url: 'backend/pois/pois.json',
+      url: 'api/pois-approved',
       method: 'GET',
       dataType: 'json'
     }).catch(error => {
@@ -121,7 +121,7 @@ function loadPoisFromFile() {
     
     // Load draft POIs
     $.ajax({
-      url: 'backend/pois/pois-draft.json',
+      url: 'api/pois-draft',
       method: 'GET',
       dataType: 'json'
     }).catch(error => {
@@ -129,6 +129,8 @@ function loadPoisFromFile() {
       return []; // Return empty array if file doesn't exist or has error
     })
   ])
+
+  
   .then(([approvedPois, draftPois]) => {
     // Process the POIs to ensure they have approval status
     const processedApproved = approvedPois.map(poi => ({
@@ -518,7 +520,7 @@ function saveContextMenuPoi() {
 // Add this function to save unapproved POIs to a different file
 function saveUnapprovedPoi(poi) {
     $.ajax({
-        url: 'http://localhost:3000/api/save-poi',  // Updated URL to match server
+        url: '/api/save-poi',  // Updated URL to match server
         method: 'POST',
         data: JSON.stringify(poi),
         contentType: 'application/json',
