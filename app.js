@@ -28,8 +28,16 @@ const formatCoordinate = (value) => {
   return sign + String(Math.abs(roundedValue)).padStart(4, '0');
 };
 
+// Check if user has edit permissions based on URL parameter
+function hasEditPermission() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('canEdit') === '1';
+}
+
 // Update the context menu HTML structure
 function updateContextMenuHtml() {
+  const showDeleteButton = hasEditPermission();
+  
   $('#context-menu').html(`
     <div class="context-menu-form">
       <div class="context-menu-field">
@@ -51,7 +59,7 @@ function updateContextMenuHtml() {
       </div>
       <div class="context-menu-buttons">
         <button id="context-save-btn">Save</button>
-        <button id="context-delete-btn" style="background-color: #f44336;">Delete</button>
+        ${showDeleteButton ? '<button id="context-delete-btn" style="background-color: #f44336;">Delete</button>' : ''}
         <button id="context-cancel-btn">Cancel</button>
       </div>
     </div>
@@ -563,7 +571,12 @@ function showEditContextMenu(poiId, screenX, screenY) {
 
   $('#context-poi-type').val(poi.type);
   $('#context-poi-note').val(poi.description || '');
-  $('#context-delete-btn').show();
+  
+  // Only show delete button if user has edit permission
+  if (hasEditPermission()) {
+    $('#context-delete-btn').show();
+  }
+  
   contextMenu.data('poi-id', poiId);
 
   // Update coordinates display with the POI's coordinates
