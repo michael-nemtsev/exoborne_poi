@@ -854,20 +854,16 @@ $(document).ready(function () {
     }
   });
 
+  // Add event listener for right-click (context menu)
   $('#game-map').on('contextmenu', function (e) {
-  //$('#game-map').on('dblclick', function (e) {
     e.preventDefault();
-    const mapOffset = $('#game-map').offset();
-    const clickX = (e.pageX - mapOffset.left) / currentZoom;
-    const clickY = (e.pageY - mapOffset.top) / currentZoom;
-    const clickedPoi = $(e.target).closest('.poi-marker');
+    handleMapClick(e);
+  });
 
-    if (clickedPoi.length) {
-      const poiId = clickedPoi.data('id');
-      showEditContextMenu(poiId, e.pageX, e.pageY);
-    } else {
-      showContextMenu(e.pageX, e.pageY, clickX, clickY);
-    }
+  // Add event listener for double left-click
+  $('#game-map').on('dblclick', function (e) {
+    e.preventDefault();
+    handleMapClick(e);
   });
 
   $('#context-menu').on('click', function (e) {
@@ -916,8 +912,8 @@ $(document).ready(function () {
 
     // CHANGE THESE LINES to offset the coordinate system
     // Add your custom offsets to change where (0,0) is located
-    const offsetX = 200; // Change this to your desired X offset
-    const offsetY = 300; // Change this to your desired Y offset
+    const offsetX = 600; // Change this to your desired X offset
+    const offsetY = 250; // Change this to your desired Y offset
 
     // Apply the offsets
     const adjustedX = mapX - offsetX;
@@ -935,3 +931,18 @@ $(document).ready(function () {
     $('#map-container').trigger('mousemove');
   });
 });
+
+// Function to handle map click events for both right-click and double-click
+function handleMapClick(e) {
+  const mapOffset = $('#game-map').offset();
+  const clickX = (e.pageX - mapOffset.left) / currentZoom;
+  const clickY = (e.pageY - mapOffset.top) / currentZoom;
+  const clickedPoi = $(e.target).closest('.poi-marker');
+
+  if (clickedPoi.length) {
+    const poiId = clickedPoi.data('id');
+    showEditContextMenu(poiId, e.pageX, e.pageY);
+  } else {
+    showContextMenu(e.pageX, e.pageY, clickX, clickY);
+  }
+}
