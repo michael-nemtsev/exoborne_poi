@@ -1,27 +1,3 @@
 [
-  {
-    "id": "poi-1741108215163",
-    "name": "POI-5163",
-    "type": "shelter",
-    "description": "test 3",
-    "x": 826.5,
-    "y": 429,
-    "visible": true,
-    "approved": false,
-    "dateAdded": "2025-03-04T17:10:15.163Z",
-    "action": "create",
-    "lastEdited": "2025-03-05T06:27:28.637Z"
-  },
-  {
-    "id": "poi-1741155760429",
-    "name": "POI-0429",
-    "type": "shelter",
-    "description": "66",
-    "x": 983.8000030517578,
-    "y": 494.8000030517578,
-    "visible": true,
-    "approved": false,
-    "dateAdded": "2025-03-05T06:22:40.429Z",
-    "lastEdited": "2025-03-05T06:22:49.159Z"
-  }
+
 ]

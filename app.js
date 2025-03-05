@@ -1,3 +1,7 @@
+// Global offsets
+let offsetX = 602; // Change this to your desired X offset
+let offsetY = -248; // Change this to your desired Y offset
+
 // Configuration
 const API_ENDPOINT = 'http://localhost:8080/api'; // Update to match Node.js server URL
 const MAP_WIDTH = 2000;
@@ -294,7 +298,13 @@ function changeZoom(delta) {
 }
 
 function updateMapTransform() {
-  $('#game-map').css('transform', `scale(${currentZoom}) translate(${mapPosition.x}px, ${mapPosition.y}px)`);
+  $('#game-map').css('transform', 
+    `scale(${currentZoom}) 
+    translate(${mapPosition.x}px, 
+    ${mapPosition.y}px)`);
+
+    console.log('transform X', mapPosition.x);
+    console.log('transform Y', mapPosition.y);
 }
 
 function resetMapView() {
@@ -324,19 +334,30 @@ function toggleAddMode() {
   }
 }
 
+// Function to format coordinates as strings with signs
+const formatCoordinateForStorage = (value) => {
+    const roundedValue = Math.round(value);
+    const sign = roundedValue >= 0 ? '+' : '-';
+    return sign + String(Math.abs(roundedValue)).padStart(4, '0');
+};
+
 function savePoi() {
   if (!tempPoi) return;
 
   const poiType = $('#poi-type').val().trim();
   const poiColor = getPoiColor(poiType);
 
+  // Calculate adjusted coordinates for saving
+  const adjustedX = (tempPoi.x - offsetX) * 1.664;
+  const adjustedY = (tempPoi.y - offsetY) * 1.664;
+
   const poi = {
       id: 'poi-' + Date.now(),
       name: tempPoi.name,
       type: poiType,
       description: $('#poi-desc').val().trim(),
-      x: tempPoi.x,
-      y: tempPoi.y,
+      x: formatCoordinateForStorage(adjustedX),
+      y: formatCoordinateForStorage(adjustedY),
       visible: true,
       approved: false, // Mark new POIs as unapproved
       dateAdded: new Date().toISOString()
@@ -388,6 +409,8 @@ function selectPoi(id) {
     const isOutsideX = poiScreenX < margin || poiScreenX > containerWidth - margin;
     const isOutsideY = poiScreenY < margin || poiScreenY > containerHeight - margin;
 
+    // DUNNO WHY WE HAVE IT HERE - it breaks the zoom when editing
+    /*
     if (isOutsideX || isOutsideY) {
       mapPosition = {
         x: containerWidth / (2 * currentZoom) - poi.x,
@@ -395,6 +418,7 @@ function selectPoi(id) {
       };
       updateMapTransform();
     }
+    */
   }
 }
 
@@ -472,8 +496,12 @@ function showContextMenu(screenX, screenY, mapX, mapY) {
   $('#context-delete-btn').hide();
 
   $('#context-poi-type').css('color', getPoiColor($('#context-poi-type').val()));
-  contextMenu.data('map-x', mapX);
-  contextMenu.data('map-y', mapY);
+
+  const adjustedX = (mapX - offsetX) * 1.664;
+  const adjustedY = (mapY - offsetY - MAP_HEIGHT) * 1.664;
+
+  contextMenu.data('map-x', adjustedX);
+  contextMenu.data('map-y', adjustedY);
 
   contextMenu.css({
     top: posY + 'px',
@@ -558,7 +586,7 @@ function showEditContextMenu(poiId, screenX, screenY) {
   $('#context-delete-btn').show();
 }
 
-// Same for the context menu
+// Update context menu POI saving logic
 function saveContextMenuPoi() {
   const contextMenu = $('#context-menu');
   const mapX = contextMenu.data('map-x');
@@ -573,8 +601,8 @@ function saveContextMenuPoi() {
       name: name,
       type: type,
       description: description,
-      x: mapX,
-      y: mapY,
+      x: formatCoordinateForStorage(mapX),
+      y: formatCoordinateForStorage(mapY),
       visible: true,
       approved: false, // Mark new POIs as unapproved
       dateAdded: new Date().toISOString()
@@ -682,6 +710,7 @@ function saveEditedPoi() {
           // Render the updated POIs
           renderPois();
           savePoisToStorage();
+          
         } else {
           showNotification('Error updating POI: ' + (response.error || 'Unknown error'), true);
         }
@@ -717,9 +746,16 @@ function renderPois() {
   pois.filter(p => p.visible).forEach(poi => {
       const poiColor = getPoiColor(poi.type);
       
+      // Calculate adjusted coordinates for each POI
+      //const realX = 585
+      //const realY = 1180;
+
+      const realX = (poi.x / 1.664) + offsetX;
+      const realY = (poi.y / 1.664) + offsetY + MAP_HEIGHT;
+
       // Create POI marker with approval status indicator
       const marker = $(`
-          <div class="poi-marker ${poi.approved ? 'approved' : 'unapproved'}" data-id="${poi.id}" style="left: ${poi.x}px; top: ${poi.y}px;">
+          <div class="poi-marker ${poi.approved ? 'approved' : 'unapproved'}" data-id="${poi.id}" style="left: ${realX}px; top: ${realY}px;">
               <svg viewBox="0 0 24 24">
                   <path fill="${poiColor}" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                   ${!poi.approved ? '<circle cx="18" cy="6" r="5" fill="#ff5722" stroke="white" stroke-width="1" />' : ''}
@@ -911,20 +947,10 @@ $(document).ready(function () {
     const mapY = Math.round(((e.pageY - mapOffset.top) / currentZoom) - MAP_HEIGHT);
 
 
-    const scaledX = mapX;
-    const scaledY = mapY;
-
-    // Add your custom offsets to change where (0,0) is located
-    const offsetX = 602; // Change this to your desired X offset
-    const offsetY = -248; // Change this to your desired Y offset
-
     // Apply the offsets
-    const adjustedX = (scaledX - offsetX) * 1.664;
-    const adjustedY = (scaledY - offsetY) * 1.664;
+    const adjustedX = (mapX - offsetX) * 1.664;
+    const adjustedY = (mapY - offsetY) * 1.664;
 
-    // Remove boundary restrictions
-    const boundedX = adjustedX;
-    const boundedY = adjustedY;
 
     // Update the display with the adjusted coordinates
     const formatCoordinate = (value) => {
@@ -933,7 +959,7 @@ $(document).ready(function () {
       return sign + String(Math.abs(roundedValue)).padStart(4, '0');
     };
 
-    $('#coordinates-display').text(`X: ${formatCoordinate(boundedX)}, Y: ${formatCoordinate(boundedY)}`);
+    $('#coordinates-display').text(`X: ${formatCoordinate(adjustedX)}, Y: ${formatCoordinate(adjustedY)}`);
   });
 
   $('#game-map').on('mousemove', function (e) {
