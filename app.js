@@ -908,23 +908,31 @@ $(document).ready(function () {
 
     // For Y coordinate, we need to flip it since we want 0 at the bottom
     // We calculate from the top, then subtract from the total height to get from bottom
-    const mapY = Math.round(MAP_HEIGHT - ((e.pageY - mapOffset.top) / currentZoom));
+    const mapY = Math.round(((e.pageY - mapOffset.top) / currentZoom) - MAP_HEIGHT);
 
-    // CHANGE THESE LINES to offset the coordinate system
+
+    const scaledX = mapX;
+    const scaledY = mapY;
+
     // Add your custom offsets to change where (0,0) is located
-    const offsetX = 600; // Change this to your desired X offset
-    const offsetY = 250; // Change this to your desired Y offset
+    const offsetX = 602; // Change this to your desired X offset
+    const offsetY = -248; // Change this to your desired Y offset
 
     // Apply the offsets
-    const adjustedX = mapX - offsetX;
-    const adjustedY = mapY - offsetY;
+    const adjustedX = (scaledX - offsetX) * 1.665;
+    const adjustedY = (scaledY - offsetY) * 1.665;
 
-    // Keep coordinates within bounds (optional)
-    const boundedX = Math.max(-offsetX, Math.min(MAP_WIDTH - offsetX, adjustedX));
-    const boundedY = Math.max(-offsetY, Math.min(MAP_HEIGHT - offsetY, adjustedY));
+    // Remove boundary restrictions
+    const boundedX = adjustedX;
+    const boundedY = adjustedY;
 
     // Update the display with the adjusted coordinates
-    $('#coordinates-display').text(`X: ${boundedX}, Y: ${boundedY}`);
+    const formatCoordinate = (value) => {
+      const sign = value >= 0 ? '+' : '-';
+      return sign + String(Math.abs(value)).padStart(4, '0');
+    };
+
+    $('#coordinates-display').text(`X: ${formatCoordinate(boundedX)}, Y: ${formatCoordinate(boundedY)}`);
   });
 
   $('#game-map').on('mousemove', function (e) {
