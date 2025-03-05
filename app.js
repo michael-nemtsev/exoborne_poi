@@ -919,8 +919,8 @@ $(document).ready(function () {
     const offsetY = -248; // Change this to your desired Y offset
 
     // Apply the offsets
-    const adjustedX = (scaledX - offsetX) * 1.665;
-    const adjustedY = (scaledY - offsetY) * 1.665;
+    const adjustedX = (scaledX - offsetX) * 1.664;
+    const adjustedY = (scaledY - offsetY) * 1.664;
 
     // Remove boundary restrictions
     const boundedX = adjustedX;
@@ -928,8 +928,9 @@ $(document).ready(function () {
 
     // Update the display with the adjusted coordinates
     const formatCoordinate = (value) => {
-      const sign = value >= 0 ? '+' : '-';
-      return sign + String(Math.abs(value)).padStart(4, '0');
+      const roundedValue = Math.round(value);
+      const sign = roundedValue >= 0 ? '+' : '-';
+      return sign + String(Math.abs(roundedValue)).padStart(4, '0');
     };
 
     $('#coordinates-display').text(`X: ${formatCoordinate(boundedX)}, Y: ${formatCoordinate(boundedY)}`);
