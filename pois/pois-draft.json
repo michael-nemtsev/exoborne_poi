@@ -142,42 +142,6 @@
     "lastEdited": "2025-03-05T15:42:04.707Z"
   },
   {
-    "id": "poi-1741188749978",
-    "name": "POI-9978",
-    "type": "shelter",
-    "description": "Tier 3 lock",
-    "x": "+1256",
-    "y": "-1087",
-    "visible": true,
-    "approved": false,
-    "dateAdded": "2025-03-05T15:32:29.978Z",
-    "lastEdited": "2025-03-05T16:29:52.908Z"
-  },
-  {
-    "id": "poi-1741188755025",
-    "name": "POI-5025",
-    "type": "shelter",
-    "description": "Tier 3 lock",
-    "x": "+1109",
-    "y": "-1214",
-    "visible": true,
-    "approved": false,
-    "dateAdded": "2025-03-05T15:32:35.025Z",
-    "lastEdited": "2025-03-05T16:29:32.425Z"
-  },
-  {
-    "id": "poi-1741188765008",
-    "name": "POI-5008",
-    "type": "shelter",
-    "description": "Level 3",
-    "x": "+0775",
-    "y": "-1250",
-    "visible": true,
-    "approved": false,
-    "dateAdded": "2025-03-05T15:32:45.008Z",
-    "lastEdited": "2025-03-05T15:34:28.256Z"
-  },
-  {
     "id": "poi-1741189524488",
     "name": "POI-4488",
     "type": "secret",

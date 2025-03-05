@@ -118,11 +118,17 @@ app.post('/api/save-poi', (req, res) => {
     console.log('Received POI request:', req.body);
 
     const poi = req.body;
+    if (!poi || !poi.id) {
+        console.error('Invalid POI data received');
+        return res.status(400).json({ success: false, error: 'Valid POI data is required' });
+    }
+
     const filePath = DRAFT_FILE;
 
     try {
         // Ensure the directory exists
         if (!fs.existsSync(path.dirname(filePath))) {
+            console.log(`Creating directory: ${path.dirname(filePath)}`);
             fs.mkdirSync(path.dirname(filePath), { recursive: true });
         }
 
@@ -134,14 +140,20 @@ app.post('/api/save-poi', (req, res) => {
                 if (fileContent && fileContent.trim()) {
                     pois = JSON.parse(fileContent);
                 }
+                console.log(`Read ${pois.length} POIs from draft file`);
             } catch (parseError) {
                 console.error('Error parsing POIs file:', parseError);
                 return res.status(500).json({ success: false, error: 'Error parsing POIs file' });
             }
+        } else {
+            console.log(`Draft file does not exist, creating new file: ${filePath}`);
         }
 
         // Remove the action property before saving
         const { action, ...cleanPoi } = poi;
+        
+        // Ensure approved status is false for draft POIs
+        cleanPoi.approved = false;
 
         // Check if this POI already exists
         const existingIndex = pois.findIndex(p => p.id === cleanPoi.id);
@@ -236,6 +248,117 @@ app.post('/api/delete-poi', (req, res) => {
         });
     } catch (err) {
         console.error('Error deleting POI:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Endpoint to approve POIs
+app.post('/api/approve-poi', (req, res) => {
+    console.log('Received POI approval request:', req.body);
+
+    const poi = req.body;
+    if (!poi || !poi.id) {
+        console.error('Invalid POI data received for approval');
+        return res.status(400).json({ success: false, error: 'Valid POI data is required' });
+    }
+
+    try {
+        // Ensure both files exist
+        if (!fs.existsSync(DRAFT_FILE)) {
+            console.error(`Draft file not found: ${DRAFT_FILE}`);
+            return res.status(404).json({ success: false, error: 'Draft POIs file not found' });
+        }
+        if (!fs.existsSync(POIS_FILE)) {
+            // Create the approved POIs file if it doesn't exist
+            console.log(`Creating approved POIs file: ${POIS_FILE}`);
+            fs.writeFileSync(POIS_FILE, '[]', 'utf8');
+        }
+
+        // Read draft POIs
+        let draftPois = [];
+        try {
+            const draftContent = fs.readFileSync(DRAFT_FILE, 'utf8');
+            if (draftContent && draftContent.trim()) {
+                draftPois = JSON.parse(draftContent);
+            }
+            console.log(`Read ${draftPois.length} POIs from draft file`);
+        } catch (parseError) {
+            console.error('Error parsing draft POIs file:', parseError);
+            return res.status(500).json({ success: false, error: 'Error parsing draft POIs file' });
+        }
+
+        // Read approved POIs
+        let approvedPois = [];
+        try {
+            const approvedContent = fs.readFileSync(POIS_FILE, 'utf8');
+            if (approvedContent && approvedContent.trim()) {
+                approvedPois = JSON.parse(approvedContent);
+            }
+            console.log(`Read ${approvedPois.length} POIs from approved file`);
+        } catch (parseError) {
+            console.error('Error parsing approved POIs file:', parseError);
+            return res.status(500).json({ success: false, error: 'Error parsing approved POIs file' });
+        }
+
+        // Find the POI in the draft file
+        const draftIndex = draftPois.findIndex(p => p.id === poi.id);
+        if (draftIndex === -1) {
+            // If not found in draft, check if it's already in the approved file
+            const approvedIndex = approvedPois.findIndex(p => p.id === poi.id);
+            if (approvedIndex !== -1) {
+                console.log(`POI ${poi.id} is already approved`);
+                return res.json({
+                    success: true,
+                    message: 'POI is already approved',
+                    draftPois: draftPois,
+                    approvedPois: approvedPois
+                });
+            }
+            console.error(`POI ${poi.id} not found in draft file`);
+            return res.status(404).json({ success: false, error: 'POI not found in draft file' });
+        }
+
+        console.log(`Found POI ${poi.id} in draft file at index ${draftIndex}`);
+        
+        // Remove the POI from draft file
+        const poiToApprove = { ...draftPois[draftIndex] };
+        draftPois.splice(draftIndex, 1);
+        
+        // Ensure approved status is set to true
+        poiToApprove.approved = true;
+        
+        // Remove any action property if it exists
+        const { action, ...cleanPoi } = poiToApprove;
+        
+        // Check if this POI already exists in the approved file
+        const approvedIndex = approvedPois.findIndex(p => p.id === poi.id);
+        if (approvedIndex !== -1) {
+            // Update existing approved POI
+            console.log(`Updating existing approved POI at index ${approvedIndex}`);
+            approvedPois[approvedIndex] = cleanPoi;
+        } else {
+            // Add to approved POIs
+            console.log(`Adding new approved POI`);
+            approvedPois.push(cleanPoi);
+        }
+
+        // Save both files
+        console.log(`Saving ${draftPois.length} POIs to draft file`);
+        fs.writeFileSync(DRAFT_FILE, JSON.stringify(draftPois, null, 2));
+        
+        console.log(`Saving ${approvedPois.length} POIs to approved file`);
+        fs.writeFileSync(POIS_FILE, JSON.stringify(approvedPois, null, 2));
+        
+        console.log('Successfully approved POI');
+        
+        res.json({ 
+            success: true, 
+            message: 'POI approved successfully',
+            draftPois: draftPois,
+            approvedPois: approvedPois
+        });
+    } catch (err) {
+        console.error('Error approving POI:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });

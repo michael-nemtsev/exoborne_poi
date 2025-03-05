@@ -62,6 +62,7 @@ function updateContextMenuHtml() {
       <div class="context-menu-buttons">
         <button id="context-save-btn">Save</button>
         ${showDeleteButton ? '<button id="context-delete-btn" style="background-color: #f44336;">Delete</button>' : ''}
+        <button id="context-approve-btn" style="background-color: #4CAF50; display: none;">Approve</button>
         <button id="context-cancel-btn">Cancel</button>
       </div>
     </div>
@@ -77,6 +78,14 @@ function updateContextMenuHtml() {
     const poiId = $('#context-menu').data('poi-id');
     if (poiId) {
       deletePoi(poiId);
+      $('#context-menu').hide();
+    }
+  });
+
+  $('#context-approve-btn').off('click').on('click', function () {
+    const poiId = $('#context-menu').data('poi-id');
+    if (poiId) {
+      approvePoi(poiId);
       $('#context-menu').hide();
     }
   });
@@ -320,8 +329,6 @@ function updateMapTransform() {
     translate(${mapPosition.x}px, 
     ${mapPosition.y}px)`);
 
-    console.log('transform X', mapPosition.x);
-    console.log('transform Y', mapPosition.y);
 }
 
 function resetMapView() {
@@ -387,6 +394,9 @@ function savePoi() {
     renderPois();
     savePoisToStorage();
     
+    // Send unapproved POI to server
+    saveUnapprovedPoi(poi);
+    
     // Reset form and exit add mode
     $('#poi-form').hide();
     $('#poi-desc').val('');
@@ -397,10 +407,8 @@ function savePoi() {
     $('#add-mode-btn').removeClass('active');
     $('#game-map').css('cursor', 'move');
     
-    showNotification('POI added successfully');
+    showNotification('POI added successfully (awaiting approval)');
     
-    // Sync with server if available
-    syncWithServer();
     return;
   }
   
@@ -492,32 +500,111 @@ function deletePoi(poiId) {
     return;
   }
   
-  if (confirm('Are you sure you want to delete this POI?')) {
-    // Remove from local array
-    pois = pois.filter(p => p.id !== poiId);
-    renderPois();
-    savePoisToStorage();
-    
-    // Send delete request to server for unapproved POIs
-    if (poi.approved === false) {
-      $.ajax({
-        url: `${API_ENDPOINT}/delete-poi`,
-        method: 'POST',
-        data: JSON.stringify({ id: poiId }),
-        contentType: 'application/json',
-        success: function(response) {
-          console.log('POI deleted from server successfully:', response);
-          showNotification('POI deleted successfully');
-        },
-        error: function(xhr, status, error) {
-          console.error('Error deleting POI from server:', error);
-          showNotification('POI deleted locally, but failed to delete from server', true);
-        }
-      });
-    } else {
-      showNotification('POI deleted successfully');
-    }
+  // Confirm deletion
+  if (!confirm(`Are you sure you want to delete this POI?\n\nType: ${poi.type}\nCoordinates: X: ${poi.x}, Y: ${poi.y}`)) {
+    return;
   }
+  
+  // Remove from local array
+  pois = pois.filter(p => p.id !== poiId);
+
+  // Send delete request to server for unapproved POIs
+  if (poi.approved === false) {
+    fetch(`${API_ENDPOINT}/delete-poi`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: poiId }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showNotification('POI deleted successfully');
+        renderPois();
+      } else {
+        showNotification('Error deleting POI: ' + data.error, true);
+      }
+    })
+    .catch(error => {
+      console.error('Error deleting POI:', error);
+      showNotification('Error deleting POI', true);
+    });
+  } else {
+    renderPois();
+  }
+}
+
+// Function to approve a POI
+function approvePoi(poiId) {
+  // Check if user has edit permission
+  if (!hasEditPermission()) {
+    showNotification('You do not have permission to approve POIs', true);
+    return;
+  }
+
+  const poi = pois.find(p => p.id === poiId);
+  if (!poi) return;
+
+  // Check if this POI is already approved
+  if (poi.approved === true) {
+    showNotification('This POI is already approved', true);
+    return;
+  }
+
+  // Confirm approval
+  if (!confirm(`Are you sure you want to approve this POI?\n\nType: ${poi.type}\nCoordinates: X: ${poi.x}, Y: ${poi.y}`)) {
+    return;
+  }
+
+  // Create a copy of the POI with approved status
+  const approvedPoi = { ...poi, approved: true };
+
+  // Show loading notification
+  showNotification('Approving POI...');
+
+  // Send approval request to server
+  fetch(`${API_ENDPOINT}/approve-poi`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(approvedPoi),
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      // Update local POI
+      const index = pois.findIndex(p => p.id === poiId);
+      if (index !== -1) {
+        pois[index] = { ...pois[index], approved: true };
+      }
+      
+      showNotification('POI approved successfully');
+      
+      // Refresh POIs from server to ensure we have the latest data
+      loadPoisFromFile();
+    } else {
+      showNotification('Error approving POI: ' + (data.error || 'Unknown error'), true);
+    }
+  })
+  .catch(error => {
+    console.error('Error approving POI:', error);
+    showNotification('Error approving POI: ' + error.message, true);
+    
+    // Fallback: Update locally if server request fails
+    const index = pois.findIndex(p => p.id === poiId);
+    if (index !== -1) {
+      pois[index] = { ...pois[index], approved: true };
+      showNotification('POI approved locally (server update failed)');
+      renderPois();
+    }
+  });
 }
 
 // Context menu functions and saving/editing POIs
@@ -633,6 +720,7 @@ function showEditContextMenu(poiId, screenX, screenY) {
     $('#context-poi-note').prop('disabled', true).css('opacity', '0.6');
     $('#context-save-btn').prop('disabled', true).css('opacity', '0.6');
     $('#context-delete-btn').prop('disabled', true).css('opacity', '0.6');
+    $('#context-approve-btn').hide();
 
     // Add a notice that approved POIs cannot be edited (with smaller font)
     contextMenu.find('.context-menu-form').prepend(
@@ -644,6 +732,13 @@ function showEditContextMenu(poiId, screenX, screenY) {
     $('#context-poi-note').prop('disabled', false).css('opacity', '1');
     $('#context-save-btn').prop('disabled', false).css('opacity', '1');
     $('#context-delete-btn').prop('disabled', false).css('opacity', '1');
+    
+    // Show approve button for unapproved POIs if user has edit permission
+    if (hasEditPermission()) {
+      $('#context-approve-btn').show();
+    } else {
+      $('#context-approve-btn').hide();
+    }
     
     // Remove the notice if it exists
     contextMenu.find('.approved-notice').remove();
@@ -700,35 +795,54 @@ function saveUnapprovedPoi(poi) {
     // Show loading notification
     showNotification('Saving new POI...');
     
-    $.ajax({
-        url: `${API_ENDPOINT}/save-poi`,  // Use API_ENDPOINT variable
+    // Make a copy of the POI to avoid modifying the original
+    const poiToSave = { ...poi };
+    
+    // Ensure the POI has approved=false
+    poiToSave.approved = false;
+    
+    fetch(`${API_ENDPOINT}/save-poi`, {
         method: 'POST',
-        data: JSON.stringify({
-            ...poi,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            ...poiToSave,
             action: 'create' // Add an action flag to indicate this is a new POI
         }),
-        contentType: 'application/json',
-        success: function(response) {
-            console.log('POI saved to file successfully:', response);
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('POI saved to file successfully:', data);
+        
+        if (data.success) {
+            showNotification('POI saved to draft file');
             
-            if (response.success) {
-                showNotification('POI saved to draft file');
-                
-                // Force reload POIs from server to ensure we have the latest data
-                loadPoisFromFile();
-            } else {
-                showNotification('Error saving POI: ' + (response.error || 'Unknown error'), true);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error saving POI to file:', error);
-            showNotification('Failed to save POI to file', true);
+            // Force reload POIs from server to ensure we have the latest data
+            loadPoisFromFile();
+        } else {
+            showNotification('Error saving POI: ' + (data.error || 'Unknown error'), true);
+            console.error('Server reported error:', data.error);
             
             // Fallback to local storage if server save fails
             const unapprovedPois = JSON.parse(localStorage.getItem('unapproved_pois') || '[]');
             unapprovedPois.push(poi);
             localStorage.setItem('unapproved_pois', JSON.stringify(unapprovedPois));
         }
+    })
+    .catch(error => {
+        console.error('Error saving POI to file:', error);
+        showNotification('Failed to save POI to file: ' + error.message, true);
+        
+        // Fallback to local storage if server save fails
+        const unapprovedPois = JSON.parse(localStorage.getItem('unapproved_pois') || '[]');
+        unapprovedPois.push(poi);
+        localStorage.setItem('unapproved_pois', JSON.stringify(unapprovedPois));
     });
 }
 
@@ -880,14 +994,14 @@ $('head').append(`
 function getPoiColor(type) {
   const normalizedType = String(type).toLowerCase().trim();
   switch (normalizedType) {
-    case 'shelter': return '#ff5252';
-    case 'bunker': return '#ff9800';
+    case 'shelter': return '#ffd700'; // Gold for Rebirth Shelter
+    case 'bunker': return '#b8860b'; // Dark gold for Rebirth Bunker
     case 'fragment': return '#73a575';
     case 'machinery': return '#d3d3d3'; // Light gray for Machinery Parts
     case 'electronics': return '#2196f3';
     case 'secret': return '#607d8b';
     case 'ec-kits': return '#d8b4e2'; // Light purple for EC Kits
-    case 'collectibles': return '#ffd700'; // Gold for Collectibles
+    case 'collectibles': return '#FFB6C1'; // Light pink for Collectibles
     case 'loot': return '#9c27b0'; // Purple for Loot
     default:
       console.log('Unknown POI type:', type);

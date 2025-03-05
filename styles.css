@@ -321,7 +321,7 @@
   /* Style for POI type dropdown in context menu to show colors */
   #context-poi-type option[value="shelter"] {
     background-color: #272727;
-    color: #ff5252;
+    color: #ffd700;
   }
   
   #context-poi-type option[value="fragment"] {
@@ -356,7 +356,7 @@
   
   #context-poi-type option[value="bunker"] {
     background-color: #272727;
-    color: #ffcc00;
+    color: #b8860b;
   }
   
   #context-poi-type option[value="ec-kits"] {
@@ -366,7 +366,7 @@
   
   #context-poi-type option[value="collectibles"] {
     background-color: #272727;
-    color: #ffd700; /* Gold color for Collectibles */
+    color: #FFB6C1; /* Light pink color for Collectibles */
   }
   
   #context-poi-type option[value="loot"] {
@@ -379,7 +379,18 @@
   }
   
   #context-delete-btn:hover {
-    background-color: #d32f2f;
+    background-color: #d32f2f !important;
+  }
+  
+  #context-approve-btn {
+    background-color: #4CAF50 !important;
+    color: white;
+    border: none;
+    margin-left: 5px;
+  }
+  
+  #context-approve-btn:hover {
+    background-color: #388E3C !important;
   }
   
   .coordinate-inputs {
