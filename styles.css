@@ -134,7 +134,7 @@
   }
   
   #add-mode-btn.active {
-    background-color: #4CAF50;
+    background-color: #73a575;
   }
   
   #poi-form {
@@ -306,7 +306,7 @@
   
   #context-poi-type option[value="fragment"] {
     background-color: #272727;
-    color: #4caf50;
+    color: #73a575;
   }
   
   #context-poi-type option[value="machinery"] {

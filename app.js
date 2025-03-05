@@ -838,7 +838,7 @@ function getPoiColor(type) {
     case 'shelter': return '#ff5252';
     case 'bunker': return '#ff9800';
     case 'machinery': return '#d3d3d3'; // Light gray for Machinery Parts
-    case 'fragment': return '#4caf50';
+    case 'fragment': return '#73a575';
     case 'electronics': return '#2196f3';
     case 'secret': return '#607d8b';
     case 'ec-kits': return '#d8b4e2'; // Light purple for EC Kits
