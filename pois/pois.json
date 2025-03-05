@@ -214,5 +214,41 @@
         "approved": true,
         "dateAdded": "2025-03-05T14:16:59.250Z",
         "lastEdited": "2025-03-05T14:17:38.221Z"
+      },
+      {
+        "id": "poi-1741186110876",
+        "name": "POI-0876",
+        "type": "ec-kits",
+        "description": "inside antennas on the roofs (many)",
+        "x": "+2004",
+        "y": "-1123",
+        "visible": true,
+        "approved": false,
+        "dateAdded": "2025-03-05T14:48:30.876Z",
+        "lastEdited": "2025-03-05T14:54:38.584Z"
+      },
+      {
+        "id": "poi-1741186160622",
+        "name": "POI-0622",
+        "type": "machinery",
+        "description": "inside antennas on the roofs (many)",
+        "x": "+2005",
+        "y": "-1095",
+        "visible": true,
+        "approved": false,
+        "dateAdded": "2025-03-05T14:49:20.622Z",
+        "lastEdited": "2025-03-05T14:54:44.457Z"
+      },
+      {
+        "id": "poi-1741186439366",
+        "name": "POI-9365",
+        "type": "electronics",
+        "description": "inside antennas on the roofs (many)",
+        "x": "+2053",
+        "y": "-1141",
+        "visible": true,
+        "approved": false,
+        "dateAdded": "2025-03-05T14:53:59.366Z",
+        "lastEdited": "2025-03-05T14:54:12.499Z"
       }
 ]
