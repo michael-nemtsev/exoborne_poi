@@ -1,3 +1,177 @@
 [
-
+  {
+    "id": "poi-draft-1",
+    "name": "Rebirth Bunker",
+    "type": "bunker",
+    "description": "Rebirth Bunker at +0804 –0014",
+    "x": "+0804",
+    "y": "-0014",
+    "visible": true,
+    "approved": false
+  },
+  {
+    "id": "poi-draft-2",
+    "name": "Rebirth Bunker",
+    "type": "bunker",
+    "description": "Rebirth Bunker at +0136 +0003",
+    "x": "+0136",
+    "y": "+0003",
+    "visible": true,
+    "approved": false
+  },
+  {
+    "id": "poi-1741188553040",
+    "name": "POI-3040",
+    "type": "bunker",
+    "description": "",
+    "x": "+0587",
+    "y": "-0103",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:29:13.040Z"
+  },
+  {
+    "id": "poi-1741188569743",
+    "name": "POI-9743",
+    "type": "bunker",
+    "description": "",
+    "x": "-0130",
+    "y": "-0461",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:29:29.743Z"
+  },
+  {
+    "id": "poi-1741188592182",
+    "name": "POI-2182",
+    "type": "bunker",
+    "description": "",
+    "x": "+1389",
+    "y": "-0551",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:29:52.182Z"
+  },
+  {
+    "id": "poi-1741188609928",
+    "name": "POI-9928",
+    "type": "bunker",
+    "description": "",
+    "x": "+1268",
+    "y": "-0685",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:30:09.928Z"
+  },
+  {
+    "id": "poi-1741188668759",
+    "name": "POI-8759",
+    "type": "shelter",
+    "description": "",
+    "x": "+0404",
+    "y": "-0267",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:31:08.759Z"
+  },
+  {
+    "id": "poi-1741188682358",
+    "name": "POI-2358",
+    "type": "shelter",
+    "description": "",
+    "x": "+0077",
+    "y": "-0472",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:31:22.358Z"
+  },
+  {
+    "id": "poi-1741188692145",
+    "name": "POI-2145",
+    "type": "shelter",
+    "description": "",
+    "x": "-0476",
+    "y": "-0607",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:31:32.145Z"
+  },
+  {
+    "id": "poi-1741188713115",
+    "name": "POI-3115",
+    "type": "shelter",
+    "description": "",
+    "x": "+1724",
+    "y": "-0134",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:31:53.115Z"
+  },
+  {
+    "id": "poi-1741188720224",
+    "name": "POI-0224",
+    "type": "shelter",
+    "description": "",
+    "x": "+2057",
+    "y": "-0447",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:32:00.224Z"
+  },
+  {
+    "id": "poi-1741188729083",
+    "name": "POI-9083",
+    "type": "shelter",
+    "description": "",
+    "x": "+1765",
+    "y": "-0706",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:32:09.083Z"
+  },
+  {
+    "id": "poi-1741188741203",
+    "name": "POI-1203",
+    "type": "shelter",
+    "description": "",
+    "x": "+2008",
+    "y": "-1359",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:32:21.203Z"
+  },
+  {
+    "id": "poi-1741188749978",
+    "name": "POI-9978",
+    "type": "shelter",
+    "description": "",
+    "x": "+1256",
+    "y": "-1087",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:32:29.978Z"
+  },
+  {
+    "id": "poi-1741188755025",
+    "name": "POI-5025",
+    "type": "shelter",
+    "description": "",
+    "x": "+1109",
+    "y": "-1214",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:32:35.025Z"
+  },
+  {
+    "id": "poi-1741188765008",
+    "name": "POI-5008",
+    "type": "shelter",
+    "description": "Level 3",
+    "x": "+0775",
+    "y": "-1250",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T15:32:45.008Z",
+    "lastEdited": "2025-03-05T15:34:28.256Z"
+  }
 ]

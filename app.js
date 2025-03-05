@@ -21,6 +21,13 @@ let tempPoi = null;
 let selectedPoi = null;
 let lastSyncTime = 0;
 
+// Format coordinate with sign and padding
+const formatCoordinate = (value) => {
+  const roundedValue = Math.round(value);
+  const sign = roundedValue >= 0 ? '+' : '-';
+  return sign + String(Math.abs(roundedValue)).padStart(4, '0');
+};
+
 // Update the context menu HTML structure
 function updateContextMenuHtml() {
   $('#context-menu').html(`
@@ -954,19 +961,11 @@ $(document).ready(function () {
     // We calculate from the top, then subtract from the total height to get from bottom
     const mapY = Math.round(((e.pageY - mapOffset.top) / currentZoom) - MAP_HEIGHT);
 
-
     // Apply the offsets
     const adjustedX = (mapX - offsetX) * 1.664;
     const adjustedY = (mapY - offsetY) * 1.664;
 
-
     // Update the display with the adjusted coordinates
-    const formatCoordinate = (value) => {
-      const roundedValue = Math.round(value);
-      const sign = roundedValue >= 0 ? '+' : '-';
-      return sign + String(Math.abs(roundedValue)).padStart(4, '0');
-    };
-
     $('#coordinates-display').text(`X: ${formatCoordinate(adjustedX)}, Y: ${formatCoordinate(adjustedY)}`);
   });
 
