@@ -444,3 +444,53 @@
     background-color: #444;
   }
   
+  /* Style for POI type dropdown in Add POI form to show colors */
+  #poi-type option[value="shelter"] {
+    background-color: #272727;
+    color: #ffd700; /* Gold for Rebirth Shelter */
+  }
+  
+  #poi-type option[value="bunker"] {
+    background-color: #272727;
+    color: #b8860b; /* Dark gold for Rebirth Bunker */
+  }
+  
+  #poi-type option[value="fragment"] {
+    background-color: #272727;
+    color: #73a575; /* Green for Clearance Fragment */
+  }
+  
+  #poi-type option[value="machinery"] {
+    background-color: #272727;
+    color: #d3d3d3; /* Light gray for Machinery Parts */
+  }
+  
+  #poi-type option[value="electronics"] {
+    background-color: #272727;
+    color: #2196f3; /* Blue for Electronics */
+  }
+  
+  #poi-type option[value="secret"] {
+    background-color: #272727;
+    color: #607d8b; /* Blue-gray for Secrets */
+  }
+  
+  #poi-type option[value="ec-kits"] {
+    background-color: #272727;
+    color: #d8b4e2; /* Light purple for EC Kits */
+  }
+  
+  #poi-type option[value="collectibles"] {
+    background-color: #272727;
+    color: #FFB6C1; /* Light pink for Collectibles */
+  }
+  
+  #poi-type option[value="loot"] {
+    background-color: #272727;
+    color: #9c27b0; /* Purple for Loot */
+  }
+  
+  #context-delete-btn {
+    background-color: #f44336;
+  }
+  

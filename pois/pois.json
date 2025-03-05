@@ -286,5 +286,60 @@
     "approved": true,
     "dateAdded": "2025-03-05T15:32:29.978Z",
     "lastEdited": "2025-03-05T18:10:39.414Z"
+  },
+  {
+    "id": "poi-1741200700689",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+0278",
+    "y": "-1405",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-05T18:51:40.689Z"
+  },
+  {
+    "id": "poi-1741200606074",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "on a balcony",
+    "x": "+0315",
+    "y": "-1332",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-05T18:50:06.074Z"
+  },
+  {
+    "id": "poi-1741201103477",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+0823",
+    "y": "-1715",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-05T18:58:23.477Z"
+  },
+  {
+    "id": "poi-1741201272169",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+1147",
+    "y": "-1162",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-05T19:01:12.169Z"
+  },
+  {
+    "id": "poi-fragment-1",
+    "name": "Clearance Fragment",
+    "type": "fragment",
+    "description": "Clearance Fragment",
+    "x": "+1265",
+    "y": "-0932",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T11:00:00.000Z"
   }
 ]

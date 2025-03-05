@@ -186,14 +186,47 @@
     "dateAdded": "2025-03-06T10:00:00.000Z"
   },
   {
-    "id": "poi-fragment-1",
-    "name": "Clearance Fragment",
-    "type": "fragment",
-    "description": "Clearance Fragment",
-    "x": "+1265",
-    "y": "-0932",
+    "id": "poi-1741200424872",
+    "name": "Loot",
+    "type": "loot",
+    "description": "box",
+    "x": "+0309",
+    "y": "-1197",
     "visible": true,
     "approved": false,
-    "dateAdded": "2025-03-06T11:00:00.000Z"
+    "dateAdded": "2025-03-05T18:47:04.872Z"
+  },
+  {
+    "id": "poi-1741200489133",
+    "name": "Loot",
+    "type": "loot",
+    "description": "",
+    "x": "+0315",
+    "y": "-1266",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T18:48:09.133Z"
+  },
+  {
+    "id": "poi-1741201016222",
+    "name": "Loot",
+    "type": "loot",
+    "description": "",
+    "x": "+0592",
+    "y": "-1593",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T18:56:56.222Z"
+  },
+  {
+    "id": "poi-1741202040176",
+    "name": "Loot",
+    "type": "loot",
+    "description": "",
+    "x": "+1257",
+    "y": "-0951",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-05T19:14:00.176Z"
   }
 ]
