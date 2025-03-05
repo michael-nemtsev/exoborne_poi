@@ -27,7 +27,20 @@
         <option value="machinery">Machinery Parts</option>
         <option value="electronics">Electronics</option>
         <option value="secret">Secret</option>
+        <option value="ec-kits">EC Kits</option>
       </select>
+      
+      <div class="coordinate-inputs">
+        <div class="coordinate-field">
+          <label for="poi-x">X Coordinate:</label>
+          <input type="text" id="poi-x" placeholder="+0000">
+        </div>
+        <div class="coordinate-field">
+          <label for="poi-y">Y Coordinate:</label>
+          <input type="text" id="poi-y" placeholder="+0000">
+        </div>
+      </div>
+      
       <label for="poi-desc">Note:</label>
       <textarea id="poi-desc" placeholder="Add a note about this POI (shown on hover)"></textarea>
       <button id="save-poi-btn">Save</button>

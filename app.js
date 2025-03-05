@@ -341,7 +341,11 @@ function toggleAddMode() {
 
   if (addMode) {
     $('#game-map').css('cursor', 'crosshair');
-    showNotification('Click on the map to add a POI');
+    $('#poi-form').show();
+    $('#poi-x').val('');
+    $('#poi-y').val('');
+    $('#poi-desc').val('');
+    showNotification('Click on the map to add a POI or enter coordinates manually');
   } else {
     $('#game-map').css('cursor', 'move');
     $('#poi-form').hide();
@@ -357,25 +361,64 @@ const formatCoordinateForStorage = (value) => {
 };
 
 function savePoi() {
-  if (!tempPoi) return;
-
   const poiType = $('#poi-type').val().trim();
   const poiColor = getPoiColor(poiType);
+  const manualX = $('#poi-x').val().trim();
+  const manualY = $('#poi-y').val().trim();
+  
+  // Check if coordinates were manually entered
+  if (manualX && manualY) {
+    // Create POI with manually entered coordinates
+    const poi = {
+      id: 'poi-' + Date.now(),
+      name: poiType.charAt(0).toUpperCase() + poiType.slice(1),
+      type: poiType,
+      description: $('#poi-desc').val().trim(),
+      x: manualX.startsWith('+') || manualX.startsWith('-') ? manualX : '+' + manualX,
+      y: manualY.startsWith('+') || manualY.startsWith('-') ? manualY : '+' + manualY,
+      visible: true,
+      approved: false,
+      dateAdded: new Date().toISOString()
+    };
+    
+    pois.push(poi);
+    renderPois();
+    savePoisToStorage();
+    
+    // Reset form and exit add mode
+    $('#poi-form').hide();
+    $('#poi-desc').val('');
+    $('#poi-x').val('');
+    $('#poi-y').val('');
+    tempPoi = null;
+    addMode = false;
+    $('#add-mode-btn').removeClass('active');
+    $('#game-map').css('cursor', 'move');
+    
+    showNotification('POI added successfully');
+    
+    // Sync with server if available
+    syncWithServer();
+    return;
+  }
+  
+  // If no manual coordinates, use the tempPoi from map click
+  if (!tempPoi) return;
 
   // Calculate adjusted coordinates for saving
   const adjustedX = (tempPoi.x - offsetX) * 1.664;
   const adjustedY = (tempPoi.y - offsetY) * 1.664;
 
   const poi = {
-      id: 'poi-' + Date.now(),
-      name: tempPoi.name,
-      type: poiType,
-      description: $('#poi-desc').val().trim(),
-      x: formatCoordinateForStorage(adjustedX),
-      y: formatCoordinateForStorage(adjustedY),
-      visible: true,
-      approved: false, // Mark new POIs as unapproved
-      dateAdded: new Date().toISOString()
+    id: 'poi-' + Date.now(),
+    name: tempPoi.name,
+    type: poiType,
+    description: $('#poi-desc').val().trim(),
+    x: formatCoordinateForStorage(adjustedX),
+    y: formatCoordinateForStorage(adjustedY),
+    visible: true,
+    approved: false, // Mark new POIs as unapproved
+    dateAdded: new Date().toISOString()
   };
 
   pois.push(poi);
@@ -994,10 +1037,44 @@ function handleMapClick(e) {
   const clickY = (e.pageY - mapOffset.top) / currentZoom;
   const clickedPoi = $(e.target).closest('.poi-marker');
 
+  if (addMode) {
+    handleAddModeClick(e);
+    return;
+  }
+
   if (clickedPoi.length) {
     const poiId = clickedPoi.data('id');
     showEditContextMenu(poiId, e.pageX, e.pageY);
   } else {
     showContextMenu(e.pageX, e.pageY, clickX, clickY);
   }
+}
+
+// Function to handle clicks when in add mode
+function handleAddModeClick(e) {
+  const mapOffset = $('#game-map').offset();
+  const mapX = Math.round((e.pageX - mapOffset.left) / currentZoom);
+  const mapY = Math.round(((e.pageY - mapOffset.top) / currentZoom) - MAP_HEIGHT);
+
+  // Apply the offsets
+  const adjustedX = (mapX - offsetX) * 1.664;
+  const adjustedY = (mapY - offsetY) * 1.664;
+
+  // Format coordinates for display
+  const formattedX = formatCoordinate(adjustedX);
+  const formattedY = formatCoordinate(adjustedY);
+
+  // Update the coordinate input fields
+  $('#poi-x').val(formattedX);
+  $('#poi-y').val(formattedY);
+
+  // Store the original coordinates for later use if needed
+  tempPoi = {
+    x: mapX,
+    y: mapY,
+    name: 'New POI'
+  };
+
+  // Show the form if it's not already visible
+  $('#poi-form').show();
 }
