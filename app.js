@@ -51,6 +51,7 @@ function updateContextMenuHtml() {
           <option value="electronics">Electronics</option>
           <option value="secret">Secret</option>
           <option value="ec-kits">EC Kits</option>
+          <option value="collectibles">Collectibles</option>
         </select>
       </div>
       <div class="context-menu-field">
@@ -885,6 +886,7 @@ function getPoiColor(type) {
     case 'electronics': return '#2196f3';
     case 'secret': return '#607d8b';
     case 'ec-kits': return '#d8b4e2'; // Light purple for EC Kits
+    case 'collectibles': return '#ffd700'; // Gold for Collectibles
     default:
       console.log('Unknown POI type:', type);
       return '#ffffff';

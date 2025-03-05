@@ -364,6 +364,11 @@
     color: #d8b4e2; /* Light purple color for EC Kits */
   }
   
+  #context-poi-type option[value="collectibles"] {
+    background-color: #272727;
+    color: #ffd700; /* Gold color for Collectibles */
+  }
+  
   #context-delete-btn {
     background-color: #f44336;
   }
