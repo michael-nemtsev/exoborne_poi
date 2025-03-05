@@ -369,6 +369,11 @@
     color: #ffd700; /* Gold color for Collectibles */
   }
   
+  #context-poi-type option[value="loot"] {
+    background-color: #272727;
+    color: #9c27b0; /* Purple color for Loot */
+  }
+  
   #context-delete-btn {
     background-color: #f44336;
   }

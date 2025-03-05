@@ -145,23 +145,25 @@
     "id": "poi-1741188749978",
     "name": "POI-9978",
     "type": "shelter",
-    "description": "",
+    "description": "Tier 3 lock",
     "x": "+1256",
     "y": "-1087",
     "visible": true,
     "approved": false,
-    "dateAdded": "2025-03-05T15:32:29.978Z"
+    "dateAdded": "2025-03-05T15:32:29.978Z",
+    "lastEdited": "2025-03-05T16:29:52.908Z"
   },
   {
     "id": "poi-1741188755025",
     "name": "POI-5025",
     "type": "shelter",
-    "description": "",
+    "description": "Tier 3 lock",
     "x": "+1109",
     "y": "-1214",
     "visible": true,
     "approved": false,
-    "dateAdded": "2025-03-05T15:32:35.025Z"
+    "dateAdded": "2025-03-05T15:32:35.025Z",
+    "lastEdited": "2025-03-05T16:29:32.425Z"
   },
   {
     "id": "poi-1741188765008",
@@ -185,5 +187,49 @@
     "visible": true,
     "approved": false,
     "dateAdded": "2025-03-05T15:45:24.488Z"
+  },
+  {
+    "id": "poi-loot-luggage-1",
+    "name": "Loot",
+    "type": "loot",
+    "description": "Luggage",
+    "x": "+1285",
+    "y": "-1066",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T10:00:00.000Z"
+  },
+  {
+    "id": "poi-loot-luggage-2",
+    "name": "Loot",
+    "type": "loot",
+    "description": "Luggage",
+    "x": "+1140",
+    "y": "-0707",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T10:00:00.000Z"
+  },
+  {
+    "id": "poi-loot-luggage-3",
+    "name": "Loot",
+    "type": "loot",
+    "description": "Luggage",
+    "x": "+1129",
+    "y": "-0696",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T10:00:00.000Z"
+  },
+  {
+    "id": "poi-fragment-1",
+    "name": "Clearance Fragment",
+    "type": "fragment",
+    "description": "Clearance Fragment",
+    "x": "+1265",
+    "y": "-0932",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T11:00:00.000Z"
   }
 ]
