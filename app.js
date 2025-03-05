@@ -1,5 +1,5 @@
 // Configuration
-const API_ENDPOINT = '/api'; // Replace with your actual API endpoint
+const API_ENDPOINT = 'http://localhost:8080/api'; // Update to match Node.js server URL
 const MAP_WIDTH = 2000;
 const MAP_HEIGHT = 1430;
 const STORAGE_KEY = 'game_map_pois';
@@ -105,55 +105,81 @@ function initMap() {
 }
 
 function loadPoisFromFile() {
-  showNotification('Loading POIs from files...');
+  showNotification('Loading POIs from server...');
   
   // Load both approved and draft POIs
   Promise.all([
     // Load approved POIs
     $.ajax({
-      url: 'api/pois-approved',
+      url: `${API_ENDPOINT}/pois-approved`,
       method: 'GET',
       dataType: 'json'
     }).catch(error => {
       console.error('Error loading approved POIs:', error);
+      showNotification('Error loading approved POIs', true);
       return []; // Return empty array if file doesn't exist or has error
     }),
     
     // Load draft POIs
     $.ajax({
-      url: 'api/pois-draft',
+      url: `${API_ENDPOINT}/pois-draft`,
       method: 'GET',
       dataType: 'json'
     }).catch(error => {
       console.error('Error loading draft POIs:', error);
+      showNotification('Error loading draft POIs', true);
       return []; // Return empty array if file doesn't exist or has error
     })
   ])
-
-  
   .then(([approvedPois, draftPois]) => {
-    // Process the POIs to ensure they have approval status
-    const processedApproved = approvedPois.map(poi => ({
-      ...poi,
-      approved: true // Ensure approved status for main POIs
-    }));
+    console.log('Loaded POIs:', { approved: approvedPois.length, draft: draftPois.length });
+    
+    // Process the POIs to ensure they have approval status and remove any action property
+    const processedApproved = approvedPois.map(poi => {
+      // Remove action property if it exists
+      const { action, ...cleanPoi } = poi;
+      return {
+        ...cleanPoi,
+        approved: true // Ensure approved status for main POIs
+      };
+    });
 
-    const processedDraft = draftPois.map(poi => ({
-      ...poi,
-      approved: false // Ensure unapproved status for draft POIs
-    }));
+    const processedDraft = draftPois.map(poi => {
+      // Remove action property if it exists
+      const { action, ...cleanPoi } = poi;
+      return {
+        ...cleanPoi,
+        approved: false // Ensure unapproved status for draft POIs
+      };
+    });
 
-    // Combine both arrays
-    pois = [...processedApproved, ...processedDraft];
+    // Create a map to track POIs by ID to avoid duplicates
+    const poiMap = new Map();
+    
+    // Add approved POIs first
+    processedApproved.forEach(poi => {
+      poiMap.set(poi.id, poi);
+    });
+    
+    // Add draft POIs, which will override any approved POIs with the same ID
+    processedDraft.forEach(poi => {
+      poiMap.set(poi.id, poi);
+    });
+    
+    // Convert map back to array
+    pois = Array.from(poiMap.values());
     
     renderPois();
     savePoisToStorage();
-    showNotification('POIs loaded successfully');
+    
+    // Update last sync time
+    lastSyncTime = Date.now();
+    
+    showNotification(`Loaded ${pois.length} POIs successfully`);
   })
   .catch(error => {
-    console.error('Error loading POIs:', error);
-    showNotification('Error loading POIs. Using local data.', true);
-    loadPoisFromStorage();
+    console.error('Error in POI loading process:', error);
+    showNotification('Error loading POIs from server', true);
   });
 }
 
@@ -373,11 +399,40 @@ function selectPoi(id) {
 }
 
 function deletePoi(poiId) {
+  const poi = pois.find(p => p.id === poiId);
+  if (!poi) return;
+  
+  // Check if this is an approved POI
+  if (poi.approved === true) {
+    showNotification('Cannot delete approved POIs', true);
+    return;
+  }
+  
   if (confirm('Are you sure you want to delete this POI?')) {
+    // Remove from local array
     pois = pois.filter(p => p.id !== poiId);
     renderPois();
     savePoisToStorage();
-    showNotification('POI deleted successfully');
+    
+    // Send delete request to server for unapproved POIs
+    if (poi.approved === false) {
+      $.ajax({
+        url: `${API_ENDPOINT}/delete-poi`,
+        method: 'POST',
+        data: JSON.stringify({ id: poiId }),
+        contentType: 'application/json',
+        success: function(response) {
+          console.log('POI deleted from server successfully:', response);
+          showNotification('POI deleted successfully');
+        },
+        error: function(xhr, status, error) {
+          console.error('Error deleting POI from server:', error);
+          showNotification('POI deleted locally, but failed to delete from server', true);
+        }
+      });
+    } else {
+      showNotification('POI deleted successfully');
+    }
   }
 }
 
@@ -472,6 +527,28 @@ function showEditContextMenu(poiId, screenX, screenY) {
   $('#context-poi-note').val(poi.description);
   contextMenu.data('poi-id', poiId);
 
+  // Disable editing for approved POIs
+  if (poi.approved === true) {
+    $('#context-poi-type').prop('disabled', true).css('opacity', '0.6');
+    $('#context-poi-note').prop('disabled', true).css('opacity', '0.6');
+    $('#context-save-btn').prop('disabled', true).css('opacity', '0.6');
+    $('#context-delete-btn').prop('disabled', true).css('opacity', '0.6');
+    
+    // Add a notice that approved POIs cannot be edited (with smaller font)
+    contextMenu.find('.context-menu-form').prepend(
+      '<div class="approved-notice" style="color: #ff9800; margin-bottom: 8px; font-size: 12px; font-style: italic;">Approved POI and cannot be edited.</div>'
+    );
+  } else {
+    // Enable controls for unapproved POIs
+    $('#context-poi-type').prop('disabled', false).css('opacity', '1');
+    $('#context-poi-note').prop('disabled', false).css('opacity', '1');
+    $('#context-save-btn').prop('disabled', false).css('opacity', '1');
+    $('#context-delete-btn').prop('disabled', false).css('opacity', '1');
+    
+    // Remove the notice if it exists
+    contextMenu.find('.approved-notice').remove();
+  }
+
   contextMenu.css({
     top: posY + 'px',
     left: posX + 'px',
@@ -503,30 +580,43 @@ function saveContextMenuPoi() {
       dateAdded: new Date().toISOString()
   };
 
+  // Add to local array temporarily
   pois.push(poi);
   renderPois();
-  savePoisToStorage();
   
   // Send unapproved POI to server
   saveUnapprovedPoi(poi);
   
   contextMenu.hide();
-  showNotification('POI added successfully (awaiting approval)');
-
+  
   // Select the new POI after adding it
   selectPoi(poi.id);
 }
 
-// Add this function to save unapproved POIs to a different file
+// Function to save unapproved POIs to the server
 function saveUnapprovedPoi(poi) {
+    // Show loading notification
+    showNotification('Saving new POI...');
+    
     $.ajax({
-        url: '/api/save-poi',  // Updated URL to match server
+        url: `${API_ENDPOINT}/save-poi`,  // Use API_ENDPOINT variable
         method: 'POST',
-        data: JSON.stringify(poi),
+        data: JSON.stringify({
+            ...poi,
+            action: 'create' // Add an action flag to indicate this is a new POI
+        }),
         contentType: 'application/json',
         success: function(response) {
-            console.log('POI saved to file successfully');
-            showNotification('POI saved to draft file');
+            console.log('POI saved to file successfully:', response);
+            
+            if (response.success) {
+                showNotification('POI saved to draft file');
+                
+                // Force reload POIs from server to ensure we have the latest data
+                loadPoisFromFile();
+            } else {
+                showNotification('Error saving POI: ' + (response.error || 'Unknown error'), true);
+            }
         },
         error: function(xhr, status, error) {
             console.error('Error saving POI to file:', error);
@@ -547,15 +637,73 @@ function saveEditedPoi() {
   const poi = pois.find(p => p.id === poiId);
   if (!poi) return;
 
+  // Additional safety check - don't allow editing approved POIs
+  if (poi.approved === true) {
+    showNotification('Cannot edit approved POIs', true);
+    contextMenu.hide();
+    return;
+  }
+
+  // Update POI properties
   poi.type = $('#context-poi-type').val();
   poi.description = $('#context-poi-note').val().trim();
+  poi.lastEdited = new Date().toISOString(); // Add last edited timestamp
 
-  renderPois();
-  savePoisToStorage();
+  // If this is an unapproved POI, send the updated version to the server
+  if (poi.approved === false) {
+    // Show loading notification
+    showNotification('Saving changes...');
+    
+    // Send the updated POI to the server
+    $.ajax({
+      url: `${API_ENDPOINT}/save-poi`,
+      method: 'POST',
+      data: JSON.stringify({
+        ...poi,
+        action: 'update' // Add an action flag to indicate this is an update
+      }),
+      contentType: 'application/json',
+      success: function(response) {
+        console.log('POI updated on server successfully:', response);
+        
+        if (response.success) {
+          showNotification('POI updated successfully (awaiting approval)');
+          
+          // Update the local POI with the server response
+          if (response.pois && Array.isArray(response.pois)) {
+            // Find the updated POI in the response
+            const updatedPoi = response.pois.find(p => p.id === poiId);
+            if (updatedPoi) {
+              // Update the local POI with the server version
+              Object.assign(poi, updatedPoi);
+            }
+          }
+          
+          // Render the updated POIs
+          renderPois();
+          savePoisToStorage();
+        } else {
+          showNotification('Error updating POI: ' + (response.error || 'Unknown error'), true);
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('Error updating POI on server:', error);
+        showNotification('POI updated locally, but failed to update on server', true);
+        
+        // Still update local storage even if server update fails
+        renderPois();
+        savePoisToStorage();
+      }
+    });
+  } else {
+    // For approved POIs, just update locally
+    renderPois();
+    savePoisToStorage();
+    showNotification('POI updated successfully');
+  }
+  
   contextMenu.hide();
-  showNotification('POI updated successfully');
   selectPoi(poiId);
-  syncWithServer(true);
 }
 
 // Rendering functions

@@ -121,25 +121,122 @@ app.post('/api/save-poi', (req, res) => {
     const filePath = DRAFT_FILE;
 
     try {
+        // Ensure the directory exists
+        if (!fs.existsSync(path.dirname(filePath))) {
+            fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        }
+
         // Read existing POIs
         let pois = [];
         if (fs.existsSync(filePath)) {
-            const fileContent = fs.readFileSync(filePath, 'utf8');
-            if (fileContent) {
-                pois = JSON.parse(fileContent);
+            try {
+                const fileContent = fs.readFileSync(filePath, 'utf8');
+                if (fileContent && fileContent.trim()) {
+                    pois = JSON.parse(fileContent);
+                }
+            } catch (parseError) {
+                console.error('Error parsing POIs file:', parseError);
+                return res.status(500).json({ success: false, error: 'Error parsing POIs file' });
             }
         }
 
-        // Add new POI
-        pois.push(poi);
+        // Remove the action property before saving
+        const { action, ...cleanPoi } = poi;
+
+        // Check if this POI already exists
+        const existingIndex = pois.findIndex(p => p.id === cleanPoi.id);
+
+        if (existingIndex !== -1) {
+            // Update existing POI
+            console.log(`Updating existing POI at index ${existingIndex} with ID: ${cleanPoi.id}`);
+            
+            // Update the existing POI with new properties
+            pois[existingIndex] = { ...pois[existingIndex], ...cleanPoi };
+            
+            // Save the updated array
+            fs.writeFileSync(filePath, JSON.stringify(pois, null, 2));
+            console.log('Successfully updated POI');
+            
+            // Return success response with the updated POIs array
+            res.json({ 
+                success: true, 
+                message: 'POI updated successfully',
+                pois: pois
+            });
+        } else {
+            // Add new POI
+            console.log(`Adding new POI with ID: ${cleanPoi.id}`);
+            
+            // Add the new POI to the array
+            pois.push(cleanPoi);
+            
+            // Save the updated array
+            fs.writeFileSync(filePath, JSON.stringify(pois, null, 2));
+            console.log('Successfully added new POI');
+            
+            // Return success response with the updated POIs array
+            res.json({ 
+                success: true, 
+                message: 'POI added successfully',
+                pois: pois
+            });
+        }
+    } catch (err) {
+        console.error('Error saving POI:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Endpoint to delete POIs
+app.post('/api/delete-poi', (req, res) => {
+    console.log('Received POI delete request:', req.body);
+
+    const { id } = req.body;
+    if (!id) {
+        return res.status(400).json({ success: false, error: 'POI ID is required' });
+    }
+
+    const filePath = DRAFT_FILE;
+
+    try {
+        // Ensure the file exists
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ success: false, error: 'Draft POIs file not found' });
+        }
+
+        // Read existing POIs
+        let pois = [];
+        try {
+            const fileContent = fs.readFileSync(filePath, 'utf8');
+            if (fileContent && fileContent.trim()) {
+                pois = JSON.parse(fileContent);
+            }
+        } catch (parseError) {
+            console.error('Error parsing POIs file:', parseError);
+            return res.status(500).json({ success: false, error: 'Error parsing POIs file' });
+        }
+
+        // Check if the POI exists
+        const poiIndex = pois.findIndex(p => p.id === id);
+        if (poiIndex === -1) {
+            return res.status(404).json({ success: false, error: 'POI not found' });
+        }
+
+        // Remove the POI
+        pois.splice(poiIndex, 1);
 
         // Save back to file
         fs.writeFileSync(filePath, JSON.stringify(pois, null, 2));
-        console.log('Successfully saved POI');
-        res.json({ success: true });
+        console.log('Successfully deleted POI');
+        
+        res.json({ 
+            success: true, 
+            message: 'POI deleted successfully',
+            pois: pois
+        });
     } catch (err) {
-        console.error('Error handling POI save:', err);
-        res.status(500).json({ error: 'Failed to save POI', details: err.message });
+        console.error('Error deleting POI:', err);
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
