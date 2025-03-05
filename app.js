@@ -33,9 +33,8 @@ function updateContextMenuHtml() {
           <option value="fragment">Clearance Fragment</option>
           <option value="machinery">Machinery Parts</option>
           <option value="electronics">Electronics</option>
-          <option value="npc">NPC</option>
           <option value="secret">Secret</option>
-          <option value="boss">Boss</option>
+          <option value="ec-kits">EC Kits</option>
         </select>
       </div>
       <div class="context-menu-field">
@@ -808,12 +807,11 @@ function getPoiColor(type) {
   switch (normalizedType) {
     case 'shelter': return '#ff5252';
     case 'bunker': return '#ff9800';
-    case 'machinery': return '#2e7d32';
+    case 'machinery': return '#d3d3d3'; // Light gray for Machinery Parts
     case 'fragment': return '#4caf50';
     case 'electronics': return '#2196f3';
-    case 'npc': return '#ff9800';
     case 'secret': return '#607d8b';
-    case 'boss': return '#e91e63';
+    case 'ec-kits': return '#d8b4e2'; // Light purple for EC Kits
     default:
       console.log('Unknown POI type:', type);
       return '#ffffff';

@@ -311,7 +311,7 @@
   
   #context-poi-type option[value="machinery"] {
     background-color: #272727;
-    color: #2e7d32;
+    color: #d3d3d3;
   }
   
   #context-poi-type option[value="electronics"] {
@@ -321,7 +321,7 @@
   
   #context-poi-type option[value="npc"] {
     background-color: #272727;
-    color: #ff9800;
+    color: #ff5722;
   }
   
   #context-poi-type option[value="secret"] {
@@ -331,12 +331,17 @@
   
   #context-poi-type option[value="boss"] {
     background-color: #272727;
-    color: #e91e63;
+    color: #9c27b0;
   }
   
   #context-poi-type option[value="bunker"] {
     background-color: #272727;
-    color: #ff9800;
+    color: #ffcc00;
+  }
+  
+  #context-poi-type option[value="ec-kits"] {
+    background-color: #272727;
+    color: #d8b4e2; /* Light purple color for EC Kits */
   }
   
   #context-delete-btn {
