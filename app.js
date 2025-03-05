@@ -1007,6 +1007,28 @@ $(document).ready(function () {
     toggleGroupVisibility(type, checked);
   });
 
+  // Handle Select All button
+  $('#select-all-btn').on('click', function() {
+    $('.group-checkbox').prop('checked', true).trigger('change');
+  });
+
+  // Handle Select None button
+  $('#select-none-btn').on('click', function() {
+    $('.group-checkbox').prop('checked', false).trigger('change');
+  });
+
+  // Handle Select Only buttons
+  $('.select-only-btn').on('click', function(e) {
+    e.stopPropagation(); // Prevent triggering the checkbox click
+    const selectedType = $(this).data('type');
+    
+    // Uncheck all checkboxes
+    $('.group-checkbox').prop('checked', false).trigger('change');
+    
+    // Check only the selected one
+    $(`.group-checkbox[data-type="${selectedType}"]`).prop('checked', true).trigger('change');
+  });
+
   $('#map-container').on('mousemove', function (e) {
     const mapOffset = $('#game-map').offset();
 

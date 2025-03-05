@@ -223,14 +223,34 @@
   .poi-group-header {
     display: flex;
     align-items: center;
-    padding: 5px;
+    padding: 8px 0;
+    cursor: pointer;
     border-radius: 4px;
     background-color: #333;
     font-weight: bold;
   }
   
   .poi-group-header label {
-    padding-left: 5px;
+    margin-left: 8px;
+    cursor: pointer;
+    flex-grow: 1;
+  }
+  
+  .select-only-btn {
+    padding: 2px 6px;
+    background-color: #333;
+    color: #ccc;
+    border: 1px solid #444;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 10px;
+    margin-left: auto;
+    transition: background-color 0.2s;
+  }
+  
+  .select-only-btn:hover {
+    background-color: #444;
+    color: #fff;
   }
   
   #context-menu {
@@ -378,5 +398,28 @@
     border-radius: 4px;
     font-family: monospace;
     font-size: 14px;
+  }
+  
+  .filter-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #444;
+  }
+
+  .filter-btn {
+    padding: 5px 10px;
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+  }
+
+  .filter-btn:hover {
+    background-color: #444;
   }
   
