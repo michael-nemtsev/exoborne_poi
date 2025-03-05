@@ -26,7 +26,8 @@ function updateContextMenuHtml() {
   $('#context-menu').html(`
     <div class="context-menu-form">
       <div class="context-menu-field">
-        <label for="context-poi-type">Type:</label>
+        <label for="context-poi-type" style="display: inline-block;">Type:</label>
+        <span id="context-coordinates" style="display: inline-block; margin-left: 10px; color: #ccc; font-size: inherit;">X: 0, Y: 0</span>
         <select id="context-poi-type">
           <option value="shelter">Rebirth Shelter</option>
           <option value="bunker">Rebirth Bunker</option>
@@ -494,6 +495,9 @@ function showContextMenu(screenX, screenY, mapX, mapY) {
   $('#context-poi-note').val('');
   $('#context-delete-btn').hide();
 
+  // Update coordinates display
+  $('#context-coordinates').text(`X: ${formatCoordinate(mapX)}, Y: ${formatCoordinate(mapY)}`);
+
   $('#context-poi-type').css('color', getPoiColor($('#context-poi-type').val()));
 
   const adjustedX = (mapX - offsetX) * 1.664;
@@ -551,8 +555,12 @@ function showEditContextMenu(poiId, screenX, screenY) {
   }
 
   $('#context-poi-type').val(poi.type);
-  $('#context-poi-note').val(poi.description);
+  $('#context-poi-note').val(poi.description || '');
+  $('#context-delete-btn').show();
   contextMenu.data('poi-id', poiId);
+
+  // Update coordinates display with the POI's coordinates
+  $('#context-coordinates').text(`X: ${poi.x}, Y: ${poi.y}`);
 
   // Disable editing for approved POIs
   if (poi.approved === true) {
@@ -560,7 +568,7 @@ function showEditContextMenu(poiId, screenX, screenY) {
     $('#context-poi-note').prop('disabled', true).css('opacity', '0.6');
     $('#context-save-btn').prop('disabled', true).css('opacity', '0.6');
     $('#context-delete-btn').prop('disabled', true).css('opacity', '0.6');
-    
+
     // Add a notice that approved POIs cannot be edited (with smaller font)
     contextMenu.find('.context-menu-form').prepend(
       '<div class="approved-notice" style="color: #ff9800; margin-bottom: 8px; font-size: 12px; font-style: italic;">Approved POI and cannot be edited.</div>'
@@ -575,6 +583,8 @@ function showEditContextMenu(poiId, screenX, screenY) {
     // Remove the notice if it exists
     contextMenu.find('.approved-notice').remove();
   }
+
+  $('#context-poi-type').css('color', getPoiColor(poi.type));
 
   contextMenu.css({
     top: posY + 'px',
