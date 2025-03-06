@@ -288,5 +288,29 @@
     "approved": false,
     "dateAdded": "2025-03-06T15:03:33.855Z",
     "sessionId": "session-1741263341665-ydupvkap1xl"
+  },
+  {
+    "id": "poi-1741286264581",
+    "name": "Loot",
+    "type": "loot",
+    "description": "under metalic pole",
+    "x": "+0745",
+    "y": "-1663",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T18:37:44.581Z",
+    "sessionId": "session-1741274679488-iod7j4fw1eg"
+  },
+  {
+    "id": "poi-1741286354965",
+    "name": "Loot",
+    "type": "loot",
+    "description": "two luggages next to a car",
+    "x": "+0820",
+    "y": "-1738",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T18:39:14.965Z",
+    "sessionId": "session-1741274679488-iod7j4fw1eg"
   }
 ]

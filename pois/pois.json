@@ -518,5 +518,89 @@
     "dateAdded": "2025-03-06T15:11:23.135Z",
     "sessionId": "session-1741263341665-ydupvkap1xl",
     "lastEdited": "2025-03-06T15:11:37.131Z"
+  },
+  {
+    "id": "poi-1741286502512",
+    "name": "Shelter",
+    "type": "shelter",
+    "description": "Tier 3",
+    "x": "+0971",
+    "y": "-1788",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T18:41:42.512Z",
+    "sessionId": "session-1741274679488-iod7j4fw1eg"
+  },
+  {
+    "id": "poi-1741286181916",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+0644",
+    "y": "-1653",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T18:36:21.916Z",
+    "sessionId": "session-1741274679488-iod7j4fw1eg"
+  },
+  {
+    "id": "poi-1741286734374",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "inside a truck (access from the top)",
+    "x": "+0959",
+    "y": "-1747",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T18:45:34.374Z",
+    "sessionId": "session-1741274679488-iod7j4fw1eg"
+  },
+  {
+    "id": "poi-1741285727244",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+0286",
+    "y": "-1628",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T18:28:47.244Z",
+    "sessionId": "session-1741274679488-iod7j4fw1eg"
+  },
+  {
+    "id": "poi-1741286906432",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+1118",
+    "y": "-1535",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T18:48:26.432Z",
+    "sessionId": "session-1741274679488-iod7j4fw1eg"
+  },
+  {
+    "id": "poi-1741286979774",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+1184",
+    "y": "-1579",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T18:49:39.774Z",
+    "sessionId": "session-1741274679488-iod7j4fw1eg"
+  },
+  {
+    "id": "poi-1741287013024",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+1214",
+    "y": "-1598",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T18:50:13.024Z",
+    "sessionId": "session-1741274679488-iod7j4fw1eg"
   }
 ]
