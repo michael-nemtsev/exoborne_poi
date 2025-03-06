@@ -333,6 +333,9 @@ function loadPoisFromFile() {
     lastSyncTime = Date.now();
     
     showNotification(`Loaded ${pois.length} POIs successfully`);
+    
+    // Update groups from URL after POIs are loaded
+    updateGroupsFromUrl();
   })
   .catch(error => {
     console.error('Error in POI loading process:', error);
@@ -1427,10 +1430,89 @@ function toggleGroupVisibility(type, visible) {
   });
   renderPois();
   savePoisToStorage();
+  
+  // Update URL when group visibility changes
+  updateUrlWithGroups();
+}
+
+// Function to parse URL parameters
+function getUrlParameters() {
+  const params = {};
+  const queryString = window.location.search.substring(1);
+  
+  if (queryString) {
+    const pairs = queryString.split('&');
+    pairs.forEach(pair => {
+      const [key, value] = pair.split('=');
+      if (key && value) {
+        // If the parameter already exists, convert it to an array
+        if (params[key]) {
+          if (!Array.isArray(params[key])) {
+            params[key] = [params[key]];
+          }
+          params[key].push(decodeURIComponent(value));
+        } else {
+          params[key] = decodeURIComponent(value);
+        }
+      }
+    });
+  }
+  
+  return params;
+}
+
+// Function to update POI group visibility based on URL parameters
+function updateGroupsFromUrl() {
+  const params = getUrlParameters();
+  
+  if (params.group) {
+    // Convert to array if it's a single value
+    const groups = Array.isArray(params.group) ? params.group : [params.group];
+    
+    // First uncheck all groups
+    $('.group-checkbox').prop('checked', false);
+    
+    // Then check only the ones specified in the URL
+    groups.forEach(group => {
+      $(`.group-checkbox[data-type="${group}"]`).prop('checked', true);
+    });
+    
+    // Trigger change event for all checkboxes to update visibility
+    $('.group-checkbox').trigger('change');
+  }
+}
+
+// Function to update URL with current group selections
+function updateUrlWithGroups() {
+  const selectedGroups = [];
+  
+  // Get all checked group checkboxes
+  $('.group-checkbox:checked').each(function() {
+    selectedGroups.push($(this).data('type'));
+  });
+  
+  // Create the new URL
+  let newUrl = window.location.pathname;
+  
+  if (selectedGroups.length > 0) {
+    newUrl += '?';
+    selectedGroups.forEach((group, index) => {
+      newUrl += `group=${encodeURIComponent(group)}`;
+      if (index < selectedGroups.length - 1) {
+        newUrl += '&';
+      }
+    });
+  }
+  
+  // Update the URL without reloading the page
+  window.history.replaceState({}, document.title, newUrl);
 }
 
 $(document).ready(function () {
   initMap();
+
+  // Apply group visibility from URL parameters
+  updateGroupsFromUrl();
 
   // Show unapproved button if user has edit permissions
   if (hasEditPermission()) {
@@ -1652,26 +1734,16 @@ function handleAddModeClick(e) {
   const mapY = Math.round(((e.pageY - mapOffset.top) / currentZoom) - MAP_HEIGHT);
 
   // Apply the offsets
-  const adjustedX = (mapX - offsetX) * 1.664;
-  const adjustedY = (mapY - offsetY) * 1.664;
+  const x = mapX;
+  const y = mapY;
 
-  // Format coordinates for display
-  const formattedX = formatCoordinate(adjustedX);
-  const formattedY = formatCoordinate(adjustedY);
+  // Set the coordinates in the form
+  $('#poi-x').val(formatCoordinate(x));
+  $('#poi-y').val(formatCoordinate(y));
 
-  // Update the coordinate input fields
-  $('#poi-x').val(formattedX);
-  $('#poi-y').val(formattedY);
-
-  // Store the original coordinates for later use if needed
-  tempPoi = {
-    x: mapX,
-    y: mapY,
-    name: 'New POI'
-  };
-
-  // Show the form if it's not already visible
+  // Show the form
   $('#poi-form').show();
+  $('#poi-type').focus();
 }
 
 // Function to update zoom level indicator
