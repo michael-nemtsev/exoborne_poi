@@ -669,6 +669,11 @@
     color: #9c27b0; /* Purple for Loot */
   }
   
+  #poi-type option[value="container"] {
+    background-color: #272727;
+    color: #9b8840; /* Gold-brown for Locked Containers */
+  }
+  
   #show-unapproved-btn {
     background-color: #ff5722;
     color: white;

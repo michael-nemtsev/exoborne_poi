@@ -81,6 +81,7 @@ function updateContextMenuHtml() {
           <option value="ec-kits">EC Kits</option>
           <option value="collectibles">Collectibles</option>
           <option value="loot">Loot</option>
+          <option value="container">Locked Containers</option>
         </select>
       </div>
       <div class="context-menu-field">
@@ -1353,6 +1354,7 @@ function getPoiColor(type) {
     case 'ec-kits': return '#da70d6'; // Orchid (more vibrant than light purple)
     case 'collectibles': return '#ff69b4'; // Hot pink (more vibrant than light pink)
     case 'loot': return '#9932cc'; // Dark orchid (more vibrant purple)
+    case 'container': return '#9b8840'; // Gold-brown for Locked Containers
     default:
       console.log('Unknown POI type:', type);
       return '#ffffff';
@@ -1525,6 +1527,15 @@ $(document).ready(function () {
   if (hasEditPermission()) {
     $('#show-unapproved-btn').show();
   }
+
+  // Initialize the color of the POI type dropdown in the sidebar
+  $('#poi-type').on('change', function() {
+    const selectedType = $(this).val();
+    $(this).css('color', getPoiColor(selectedType));
+  });
+  
+  // Set initial color for the dropdown
+  $('#poi-type').css('color', getPoiColor($('#poi-type').val()));
 
   // Add this new event listener for ESC key
   $(document).on('keydown', function(e) {

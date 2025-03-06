@@ -312,5 +312,38 @@
     "approved": false,
     "dateAdded": "2025-03-06T18:39:14.965Z",
     "sessionId": "session-1741274679488-iod7j4fw1eg"
+  },
+  {
+    "id": "poi-container-1",
+    "name": "Locked Container",
+    "type": "container",
+    "description": "??",
+    "x": "+0183",
+    "y": "-0297",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-07T10:00:00.000Z"
+  },
+  {
+    "id": "poi-container-2",
+    "name": "Locked Container",
+    "type": "container",
+    "description": "T1",
+    "x": "+0395",
+    "y": "-1639",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-07T10:00:00.000Z"
+  },
+  {
+    "id": "poi-container-3",
+    "name": "Locked Container",
+    "type": "container",
+    "description": "T2",
+    "x": "+1092",
+    "y": "-1559",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-07T10:00:00.000Z"
   }
 ]
