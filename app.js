@@ -7,10 +7,12 @@ const API_ENDPOINT = 'http://localhost:8080/api'; // Update to match Node.js ser
 const MAP_WIDTH = 2000;
 const MAP_HEIGHT = 1430;
 const STORAGE_KEY = 'game_map_pois';
+const SESSION_KEY = 'game_map_session';
 const DEFAULT_ZOOM = 1;
 
 // State management
 let pois = [];
+let sessionId = '';
 
 let currentZoom = DEFAULT_ZOOM;
 let isDragging = false;
@@ -34,9 +36,27 @@ function hasEditPermission() {
   return urlParams.get('canEdit') === '1';
 }
 
+// Function to check if a POI belongs to the current session
+function isOwnedByCurrentSession(poiId) {
+  const poi = pois.find(p => p.id === poiId);
+  return poi && poi.sessionId === sessionId;
+}
+
+// Function to check if user can edit a specific POI
+function canEditPoi(poiId) {
+  return hasEditPermission() || isOwnedByCurrentSession(poiId);
+}
+
 // Update the context menu HTML structure
 function updateContextMenuHtml() {
-  const showDeleteButton = hasEditPermission();
+  const isAdmin = hasEditPermission();
+  const selectedPoiObj = pois.find(p => p.id === selectedPoi);
+  const isOwner = selectedPoiObj && selectedPoiObj.sessionId === sessionId;
+  const canEdit = isAdmin || isOwner;
+  const canDeleteInSession = isOwner && selectedPoiObj && !selectedPoiObj.approved;
+  
+  // Check if this is a new POI creation (no selectedPoi) or editing an existing POI
+  const isNewPoi = !selectedPoi;
   
   $('#context-menu').html(`
     <div class="context-menu-form">
@@ -60,34 +80,105 @@ function updateContextMenuHtml() {
         <textarea id="context-poi-note" placeholder="Add a note about this POI (shown on hover)"></textarea>
       </div>
       <div class="context-menu-buttons">
-        <button id="context-save-btn">Save</button>
-        ${showDeleteButton ? '<button id="context-delete-btn" style="background-color: #f44336;">Delete</button>' : ''}
-        <button id="context-approve-btn" style="background-color: #4CAF50; display: none;">Approve</button>
+        ${isNewPoi || canEdit ? '<button id="context-save-btn">Save</button>' : ''}
+        ${(isAdmin || canDeleteInSession) ? '<button id="context-delete-btn" style="background-color: #f44336;">Delete</button>' : ''}
+        ${isAdmin && selectedPoiObj && !selectedPoiObj.approved ? '<button id="context-approve-btn" style="background-color: #4CAF50;">Approve</button>' : ''}
         <button id="context-cancel-btn">Cancel</button>
+        ${canDeleteInSession ? '<span style="margin-left: 10px; font-size: 11px; color: #4CAF50;">✓ Your POI</span>' : ''}
+        ${isAdmin ? '<span style="margin-left: 10px; font-size: 11px; color: #4CAF50;">👑 Admin</span>' : ''}
       </div>
     </div>
   `);
 
-  // Set up event handlers
-  $('#context-save-btn').off('click').on('click', saveEditedPoi);
+  // Set up event handlers for context menu buttons
+  if (!selectedPoi) {
+    $('#context-save-btn').off('click').on('click', saveContextMenuPoi);
+  } else {
+    $('#context-save-btn').off('click').on('click', saveEditedPoi);
+  }
+  
   $('#context-cancel-btn').off('click').on('click', function () {
     $('#context-menu').hide();
   });
 
   $('#context-delete-btn').off('click').on('click', function () {
-    const poiId = $('#context-menu').data('poi-id');
-    if (poiId) {
-      deletePoi(poiId);
-      $('#context-menu').hide();
-    }
+    const poiId = selectedPoi;
+    $('#context-menu').hide();
+    deletePoi(poiId);
   });
 
   $('#context-approve-btn').off('click').on('click', function () {
-    const poiId = $('#context-menu').data('poi-id');
-    if (poiId) {
-      approvePoi(poiId);
-      $('#context-menu').hide();
+    const poiId = selectedPoi;
+    $('#context-menu').hide();
+    approvePoi(poiId);
+  });
+
+  // Make fields read-only if needed - only for existing POIs, not for new ones
+  if (selectedPoi && selectedPoiObj) {
+    const isAdmin = hasEditPermission();
+    const isOwner = selectedPoiObj.sessionId === sessionId;
+    const canEdit = isAdmin || isOwner;
+    
+    // Disable fields if user can't edit
+    $('#context-poi-type').prop('disabled', !canEdit);
+    $('#context-poi-note').prop('disabled', !canEdit);
+    
+    // Add visual styling for read-only fields
+    if (!canEdit) {
+      // Style for the select dropdown
+      $('#context-poi-type').css({
+        'background-color': 'transparent',
+        'border': '1px solid #ddd',
+        'cursor': 'not-allowed',
+        'opacity': '1',
+        'box-shadow': 'none'
+      });
+      
+      // Style for the textarea
+      $('#context-poi-note').css({
+        'background-color': 'transparent',
+        'border': '1px solid #ddd',
+        'color': '#333',
+        'cursor': 'not-allowed',
+        'opacity': '1',
+        'box-shadow': 'none',
+        'resize': 'none'  // Prevent resizing in read-only mode
+      });
+      
+      // Add a small lock icon to indicate read-only status
+      if (!$('.read-only-indicator').length) {
+        const lockIcon = $('<div class="read-only-indicator" style="position: absolute; top: 10px; right: 10px; color: #ff9800; font-size: 16px;">🔒</div>');
+        $('.context-menu-form').append(lockIcon);
+      }
+    } else {
+      $('#context-poi-type, #context-poi-note').css({
+        'background-color': '',
+        'border': '',
+        'color': '',
+        'cursor': '',
+        'opacity': '',
+        'box-shadow': '',
+        'font-weight': '',
+        'resize': ''
+      });
+      
+      // Remove lock icon if it exists
+      $('.read-only-indicator').remove();
     }
+  } else {
+    // For new POIs, always enable fields
+    $('#context-poi-type').prop('disabled', false);
+    $('#context-poi-note').prop('disabled', false);
+    $('#context-poi-type, #context-poi-note').css({
+      'background-color': '',
+      'cursor': '',
+      'opacity': ''
+    });
+  }
+
+  // Prevent clicks inside the context menu from closing it
+  $('#context-menu').off('click').on('click', function (e) {
+    e.stopPropagation();
   });
 
   // Set the color of the dropdown
@@ -106,11 +197,17 @@ function initMap() {
     transform: `scale(${currentZoom}) translate(${mapPosition.x}px, ${mapPosition.y}px)`
   });
 
+  // Initialize session ID
+  initSessionId();
+
   // Center the map initially
   resetMapView();
   
   // Initialize zoom indicator
   updateZoomIndicator();
+  
+  // Show session management UI
+  showSessionManagement();
 
   // Mouse events for dragging
   mapElement.on('mousedown', startDragging);
@@ -137,6 +234,7 @@ function initMap() {
   $('#refresh-btn').on('click', syncWithServer);
   $('#save-poi-btn').on('click', savePoi);
   $('#cancel-poi-btn').on('click', cancelAddPoi);
+  $('#session-btn').on('click', showSessionManagement);
 
   // Initialize the context menu
   updateContextMenuHtml();
@@ -421,7 +519,8 @@ function savePoi() {
       y: manualY.startsWith('+') || manualY.startsWith('-') ? manualY : '+' + manualY,
       visible: true,
       approved: false,
-      dateAdded: new Date().toISOString()
+      dateAdded: new Date().toISOString(),
+      sessionId: sessionId // Add session ID to track who created this POI
     };
     
     pois.push(poi);
@@ -462,7 +561,8 @@ function savePoi() {
     y: formatCoordinateForStorage(adjustedY),
     visible: true,
     approved: false, // Mark new POIs as unapproved
-    dateAdded: new Date().toISOString()
+    dateAdded: new Date().toISOString(),
+    sessionId: sessionId // Add session ID to track who created this POI
   };
 
   pois.push(poi);
@@ -531,12 +631,29 @@ function selectPoi(id) {
 }
 
 function deletePoi(poiId) {
+  // Debug log to help identify issues
+  console.log('Deleting POI:', poiId);
+  console.log('Current session ID:', sessionId);
+  
   const poi = pois.find(p => p.id === poiId);
-  if (!poi) return;
+  if (!poi) {
+    console.error('POI not found:', poiId);
+    return;
+  }
+  
+  console.log('POI session ID:', poi.sessionId);
+  console.log('Is owned by current session:', poi.sessionId === sessionId);
+  console.log('Has edit permission:', hasEditPermission());
   
   // Check if this is an approved POI
   if (poi.approved === true) {
     showNotification('Cannot delete approved POIs', true);
+    return;
+  }
+  
+  // Check if this POI was created in the current session or if user has edit permission
+  if (!hasEditPermission() && poi.sessionId && poi.sessionId !== sessionId) {
+    showNotification('You can only delete POIs that you created in this session', true);
     return;
   }
   
@@ -562,6 +679,7 @@ function deletePoi(poiId) {
       if (data.success) {
         showNotification('POI deleted successfully');
         renderPois();
+        savePoisToStorage(); // Save changes to localStorage
       } else {
         showNotification('Error deleting POI: ' + data.error, true);
       }
@@ -572,19 +690,20 @@ function deletePoi(poiId) {
     });
   } else {
     renderPois();
+    savePoisToStorage(); // Save changes to localStorage
   }
 }
 
 // Function to approve a POI
 function approvePoi(poiId) {
-  // Check if user has edit permission
+  const poi = pois.find(p => p.id === poiId);
+  if (!poi) return;
+
+  // Only users with canEdit=1 can approve POIs
   if (!hasEditPermission()) {
     showNotification('You do not have permission to approve POIs', true);
     return;
   }
-
-  const poi = pois.find(p => p.id === poiId);
-  if (!poi) return;
 
   // Check if this POI is already approved
   if (poi.approved === true) {
@@ -649,6 +768,9 @@ function approvePoi(poiId) {
 
 // Context menu functions and saving/editing POIs
 function showContextMenu(screenX, screenY, mapX, mapY) {
+  // Clear the selectedPoi to indicate we're creating a new POI
+  selectedPoi = null;
+  
   const contextMenu = $('#context-menu');
   updateContextMenuHtml();
 
@@ -698,11 +820,8 @@ function showContextMenu(screenX, screenY, mapX, mapY) {
     left: posX + 'px'
   }).show();
 
-  $('#context-save-btn').off('click').on('click', saveContextMenuPoi);
-  $('#context-cancel-btn').off('click').on('click', function () {
-    contextMenu.hide();
-  });
-
+  // Event handlers are now set in updateContextMenuHtml
+  
   contextMenu.off('click').on('click', function (e) {
     e.stopPropagation();
   });
@@ -711,6 +830,9 @@ function showContextMenu(screenX, screenY, mapX, mapY) {
 function showEditContextMenu(poiId, screenX, screenY) {
   const poi = pois.find(p => p.id === poiId);
   if (!poi) return;
+
+  // Select the POI
+  selectedPoi = poiId;
 
   const contextMenu = $('#context-menu');
   updateContextMenuHtml();
@@ -741,58 +863,20 @@ function showEditContextMenu(poiId, screenX, screenY) {
     posY = 10;
   }
 
-  $('#context-poi-type').val(poi.type);
-  $('#context-poi-note').val(poi.description || '');
-  
-  // Only show delete button if user has edit permission
-  if (hasEditPermission()) {
-    $('#context-delete-btn').show();
-  }
-  
-  contextMenu.data('poi-id', poiId);
-
-  // Update coordinates display with the POI's coordinates
-  $('#context-coordinates').text(`X: ${poi.x}, Y: ${poi.y}`);
-
-  // Disable editing for approved POIs
-  if (poi.approved === true) {
-    $('#context-poi-type').prop('disabled', true).css('opacity', '0.6');
-    $('#context-poi-note').prop('disabled', true).css('opacity', '0.6');
-    $('#context-save-btn').prop('disabled', true).css('opacity', '0.6');
-    $('#context-delete-btn').prop('disabled', true).css('opacity', '0.6');
-    $('#context-approve-btn').hide();
-
-    // Add a notice that approved POIs cannot be edited (with smaller font)
-    contextMenu.find('.context-menu-form').prepend(
-      '<div class="approved-notice" style="color: #ff9800; margin-bottom: 8px; font-size: 12px; font-style: italic;">Approved POI and cannot be edited.</div>'
-    );
-  } else {
-    // Enable controls for unapproved POIs
-    $('#context-poi-type').prop('disabled', false).css('opacity', '1');
-    $('#context-poi-note').prop('disabled', false).css('opacity', '1');
-    $('#context-save-btn').prop('disabled', false).css('opacity', '1');
-    $('#context-delete-btn').prop('disabled', false).css('opacity', '1');
-    
-    // Show approve button for unapproved POIs if user has edit permission
-    if (hasEditPermission()) {
-      $('#context-approve-btn').show();
-    } else {
-      $('#context-approve-btn').hide();
-    }
-    
-    // Remove the notice if it exists
-    contextMenu.find('.approved-notice').remove();
-  }
-
-  $('#context-poi-type').css('color', getPoiColor(poi.type));
-
+  // Position and show the context menu
   contextMenu.css({
-    top: posY + 'px',
     left: posX + 'px',
+    top: posY + 'px',
     display: 'block'
   });
 
-  $('#context-delete-btn').show();
+  // Set the POI data in the context menu
+  $('#context-poi-type').val(poi.type);
+  $('#context-poi-note').val(poi.description || '');
+  $('#context-coordinates').text(`X: ${poi.x}, Y: ${poi.y}`);
+  
+  // Set the color of the dropdown based on POI type
+  $('#context-poi-type').css('color', getPoiColor(poi.type));
 }
 
 // Update context menu POI saving logic
@@ -814,7 +898,8 @@ function saveContextMenuPoi() {
       y: formatCoordinateForStorage(mapY),
       visible: true,
       approved: false, // Mark new POIs as unapproved
-      dateAdded: new Date().toISOString()
+      dateAdded: new Date().toISOString(),
+      sessionId: sessionId // Add session ID to track who created this POI
   };
 
   // Add to local array temporarily
@@ -887,16 +972,36 @@ function saveUnapprovedPoi(poi) {
 }
 
 function saveEditedPoi() {
-  const contextMenu = $('#context-menu');
-  const poiId = contextMenu.data('poi-id');
-
+  // Use selectedPoi instead of getting it from contextMenu.data
+  const poiId = selectedPoi;
+  
+  // Debug log to help identify issues
+  console.log('Editing POI:', poiId);
+  console.log('Current session ID:', sessionId);
+  
   const poi = pois.find(p => p.id === poiId);
-  if (!poi) return;
+  if (!poi) {
+    console.error('POI not found:', poiId);
+    return;
+  }
+  
+  console.log('POI session ID:', poi.sessionId);
+  console.log('Is owned by current session:', poi.sessionId === sessionId);
 
-  // Additional safety check - don't allow editing approved POIs
-  if (poi.approved === true) {
+  // Check if user has permission to edit this POI
+  const isAdmin = hasEditPermission();
+  const isOwner = poi.sessionId === sessionId;
+  
+  if (!isAdmin && !isOwner) {
+    showNotification('You do not have permission to edit this POI', true);
+    $('#context-menu').hide();
+    return;
+  }
+
+  // Additional safety check - don't allow editing approved POIs unless admin
+  if (poi.approved === true && !isAdmin) {
     showNotification('Cannot edit approved POIs', true);
-    contextMenu.hide();
+    $('#context-menu').hide();
     return;
   }
 
@@ -1001,9 +1106,12 @@ function renderPois() {
       const realX = (poi.x / 1.664) + offsetX;
       const realY = (poi.y / 1.664) + offsetY + MAP_HEIGHT;
 
+      // Check if this POI was created in the current session
+      const isCurrentSession = poi.sessionId === sessionId;
+      
       // Create POI marker with approval status indicator
       const marker = $(`
-          <div class="poi-marker ${poi.approved ? 'approved' : 'unapproved'} ${poi.id === selectedPoi ? 'selected' : ''}" 
+          <div class="poi-marker ${poi.approved ? 'approved' : 'unapproved'} ${poi.id === selectedPoi ? 'selected' : ''} ${isCurrentSession ? 'current-session' : ''}" 
                data-id="${poi.id}" 
                style="left: ${realX}px; top: ${realY}px;">
               <svg viewBox="0 0 24 24">
@@ -1012,6 +1120,7 @@ function renderPois() {
                         stroke-width="1.5"
                         d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                   ${!poi.approved ? '<circle cx="18" cy="6" r="5" fill="#ff5722" stroke="white" stroke-width="1" />' : ''}
+                  ${isCurrentSession ? '<circle cx="6" cy="6" r="3" fill="#4CAF50" stroke="white" stroke-width="0.5" />' : ''}
               </svg>
           </div>
       `);
@@ -1165,11 +1274,31 @@ function getPoiColor(type) {
 // Storage and sync functions
 function loadPoisFromStorage() {
   const storedData = localStorage.getItem(STORAGE_KEY);
+  console.log('Loading POIs from storage');
+  
   if (storedData) {
     try {
       const data = JSON.parse(storedData);
       pois = data.pois || []; // Use empty array if none in storage
       lastSyncTime = data.lastSyncTime || 0;
+      
+      console.log('Loaded POIs count:', pois.length);
+      
+      // Debug: Check if POIs have sessionId
+      if (pois.length > 0) {
+        console.log('Sample POI:', pois[0]);
+        console.log('POIs with sessionId:', pois.filter(p => p.sessionId).length);
+        console.log('POIs without sessionId:', pois.filter(p => !p.sessionId).length);
+        
+        // Add sessionId to POIs that don't have it
+        pois.forEach(poi => {
+          if (!poi.sessionId) {
+            console.log('Adding missing sessionId to POI:', poi.id);
+            poi.sessionId = 'legacy-poi';
+          }
+        });
+      }
+      
       renderPois();
     } catch (e) {
       console.error('Error loading POIs from storage:', e);
@@ -1491,6 +1620,134 @@ function updateZoomIndicator() {
   $('#zoom-level').text(`Zoom: ${zoomPercent}%`);
 }
 
+// Function to show session management UI
+function showSessionManagement() {
+  // Clear any existing auto-hide timers
+  if (window.sessionUITimer) {
+    clearTimeout(window.sessionUITimer);
+  }
+  
+  // Create session management UI if it doesn't exist
+  if ($('#session-management').length === 0) {
+    const sessionUI = $(`
+      <div id="session-management" style="position: absolute; top: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; border-radius: 4px; z-index: 20; font-size: 14px; max-width: 250px;">
+        <h3 style="margin: 0 0 10px 0; font-size: 16px;">Session Management</h3>
+        <p style="margin: 0 0 10px 0; font-size: 12px;">
+          You can delete POIs you created in this session. They are marked with a green dot.
+        </p>
+        <div style="margin: 0 0 10px 0; font-size: 11px; color: #aaa;">
+          This popup will automatically close in <span id="session-timer">10</span> seconds.
+        </div>
+        <button id="new-session-btn" style="background-color: #4CAF50; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Start New Session</button>
+        <button id="hide-session-ui-btn" style="background-color: #607d8b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px;">Hide</button>
+      </div>
+    `);
+    
+    $('#map-container').append(sessionUI);
+    
+    // Add event handlers
+    $('#new-session-btn').on('click', function() {
+      if (confirm('Starting a new session will prevent you from deleting POIs created in previous sessions. Continue?')) {
+        // Generate a new session ID
+        sessionId = 'session-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
+        localStorage.setItem(SESSION_KEY, sessionId);
+        showNotification('New session started. You can now create and delete new POIs.');
+        renderPois(); // Re-render to update session indicators
+        
+        // Reset the auto-hide timer when starting a new session
+        resetSessionUITimer();
+      }
+    });
+    
+    $('#hide-session-ui-btn').on('click', function() {
+      $('#session-management').hide();
+      // Clear the timer when manually hiding
+      if (window.sessionUITimer) {
+        clearTimeout(window.sessionUITimer);
+      }
+    });
+    
+    // Mouse over the session UI should pause the timer
+    $('#session-management').on('mouseenter', function() {
+      // Clear the timer when hovering
+      if (window.sessionUITimer) {
+        clearTimeout(window.sessionUITimer);
+        $('#session-timer').text('paused');
+      }
+    });
+    
+    // Mouse leaving the session UI should restart the timer
+    $('#session-management').on('mouseleave', function() {
+      resetSessionUITimer();
+    });
+  } else {
+    // If it exists, just show it
+    $('#session-management').show();
+  }
+  
+  // Start the auto-hide timer
+  resetSessionUITimer();
+}
+
+// Function to reset the session UI timer
+function resetSessionUITimer() {
+  // Clear any existing timer
+  if (window.sessionUITimer) {
+    clearTimeout(window.sessionUITimer);
+  }
+  
+  let secondsLeft = 10;
+  
+  // Update the timer text
+  $('#session-timer').text(secondsLeft);
+  
+  // Create a countdown interval
+  const countdownInterval = setInterval(function() {
+    secondsLeft--;
+    $('#session-timer').text(secondsLeft);
+    
+    if (secondsLeft <= 0) {
+      clearInterval(countdownInterval);
+    }
+  }, 1000);
+  
+  // Set the auto-hide timer
+  window.sessionUITimer = setTimeout(function() {
+    $('#session-management').fadeOut(500);
+    clearInterval(countdownInterval);
+  }, 10000);
+}
+
+// Format coordinate with specified decimal precision
+function formatCoordinateWithPrecision(value, precision) {
+  const sign = value >= 0 ? '+' : '-';
+  return sign + value.toFixed(precision);
+}
+
+// Function to initialize or retrieve the session ID
+function initSessionId() {
+  // Check if a session ID already exists in localStorage
+  let existingSessionId = localStorage.getItem(SESSION_KEY);
+  
+  console.log('Initializing session ID');
+  console.log('Existing session ID from localStorage:', existingSessionId);
+  
+  if (!existingSessionId) {
+    // Generate a new session ID if none exists
+    existingSessionId = 'session-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem(SESSION_KEY, existingSessionId);
+    console.log('Generated new session ID:', existingSessionId);
+  }
+  
+  sessionId = existingSessionId;
+  console.log('Session ID set to:', sessionId);
+  
+  // Debug: Check if sessionId is properly set
+  setTimeout(() => {
+    console.log('Session ID after initialization:', sessionId);
+  }, 1000);
+}
+
 // Add keyboard shortcuts for zooming
 $(document).on('keydown', function(e) {
   // Only handle keyboard shortcuts if not typing in an input field
@@ -1515,9 +1772,3 @@ $(document).on('keydown', function(e) {
     }
   }
 });
-
-// Format coordinate with specified decimal precision
-function formatCoordinateWithPrecision(value, precision) {
-  const sign = value >= 0 ? '+' : '';
-  return sign + value.toFixed(precision);
-}

@@ -657,3 +657,23 @@
     background-color: #e64a19;
   }
   
+  /* Styling for POIs created in the current session */
+  .poi-marker.current-session {
+    filter: drop-shadow(0 0 3px rgba(76, 175, 80, 0.7));
+  }
+
+  .poi-marker.current-session:hover::after {
+    content: "Created in this session";
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(76, 175, 80, 0.9);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    white-space: nowrap;
+    z-index: 12;
+  }
+  
