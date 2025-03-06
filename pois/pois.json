@@ -408,5 +408,41 @@
     "visible": true,
     "approved": true,
     "dateAdded": "2025-03-06T05:31:34.151Z"
+  },
+  {
+    "id": "poi-1741252956083",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "-0029",
+    "y": "-0605",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T09:22:36.083Z",
+    "sessionId": "session-1741244565382-487g7rr5nnt"
+  },
+  {
+    "id": "poi-1741253298197",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+0324",
+    "y": "-0841",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T09:28:18.197Z",
+    "sessionId": "session-1741244565382-487g7rr5nnt"
+  },
+  {
+    "id": "poi-1741253394283",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+0515",
+    "y": "-1150",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T09:29:54.283Z",
+    "sessionId": "session-1741244565382-487g7rr5nnt"
   }
 ]
