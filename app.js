@@ -1096,6 +1096,11 @@ function toggleGroupVisibility(type, visible) {
 $(document).ready(function () {
   initMap();
 
+  // Show unapproved button if user has edit permissions
+  if (hasEditPermission()) {
+    $('#show-unapproved-btn').show();
+  }
+
   // Add this new event listener for ESC key
   $(document).on('keydown', function(e) {
     if (e.key === 'Escape') {
@@ -1169,6 +1174,40 @@ $(document).ready(function () {
     
     // Check only the selected one
     $(`.group-checkbox[data-type="${selectedType}"]`).prop('checked', true).trigger('change');
+  });
+
+  // Show only POIs of a specific type
+  $('.select-only-btn').on('click', function () {
+    const type = $(this).data('type');
+    
+    // Uncheck all group checkboxes
+    $('.group-checkbox').prop('checked', false);
+    
+    // Check only the selected type
+    $(`#group-${type}`).prop('checked', true);
+    
+    // Update POI visibility
+    pois.forEach(poi => {
+      poi.visible = (poi.type === type);
+    });
+    
+    renderPois();
+    savePoisToStorage();
+  });
+
+  // Show only unapproved POIs
+  $('#show-unapproved-btn').on('click', function () {
+    // Uncheck all group checkboxes
+    $('.group-checkbox').prop('checked', false);
+    
+    // Update POI visibility to show only unapproved POIs
+    pois.forEach(poi => {
+      poi.visible = !poi.approved;
+    });
+    
+    renderPois();
+    savePoisToStorage();
+    showNotification('Showing only unapproved POIs');
   });
 
   $('#map-container').on('mousemove', function (e) {

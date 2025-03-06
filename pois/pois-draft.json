@@ -64,17 +64,6 @@
     "dateAdded": "2025-03-05T15:30:09.928Z"
   },
   {
-    "id": "poi-1741188668759",
-    "name": "POI-8759",
-    "type": "shelter",
-    "description": "",
-    "x": "+0404",
-    "y": "-0267",
-    "visible": true,
-    "approved": false,
-    "dateAdded": "2025-03-05T15:31:08.759Z"
-  },
-  {
     "id": "poi-1741188682358",
     "name": "POI-2358",
     "type": "shelter",

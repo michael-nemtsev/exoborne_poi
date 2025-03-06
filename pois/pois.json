@@ -330,5 +330,28 @@
     "visible": true,
     "approved": true,
     "dateAdded": "2025-03-06T11:00:00.000Z"
+  },
+  {
+    "id": "poi-1741188668759",
+    "name": "POI-8759",
+    "type": "shelter",
+    "description": "Level 3",
+    "x": "+0404",
+    "y": "-0267",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-05T15:31:08.759Z",
+    "lastEdited": "2025-03-06T04:23:20.598Z"
+  },
+  {
+    "id": "poi-1741235109681",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+0316",
+    "y": "-0459",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T04:25:09.681Z"
   }
 ]
