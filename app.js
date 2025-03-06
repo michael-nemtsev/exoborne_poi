@@ -1701,6 +1701,23 @@ $(document).ready(function () {
   $('#game-map').on('mousemove', function (e) {
     $('#map-container').trigger('mousemove');
   });
+
+  // Toggle filter section visibility
+  $('#toggle-filter').on('click', function() {
+    const $container = $('#poi-groups-container');
+    const $filterControls = $('.filter-controls');
+    const $button = $(this);
+    
+    if ($container.is(':visible')) {
+      $container.slideUp(200);
+      $filterControls.slideUp(200);
+      $button.text('▲');
+    } else {
+      $container.slideDown(200);
+      $filterControls.slideDown(200);
+      $button.text('▼');
+    }
+  });
 });
 
 // Function to handle map click events for both right-click and double-click
@@ -1741,12 +1758,12 @@ function handleAddModeClick(e) {
   const mapY = Math.round(((e.pageY - mapOffset.top) / currentZoom) - MAP_HEIGHT);
 
   // Apply the offsets
-  const x = mapX;
-  const y = mapY;
+  const adjustedX = (mapX - offsetX) * 1.664;
+  const adjustedY = (mapY - offsetY) * 1.664;
 
   // Set the coordinates in the form
-  $('#poi-x').val(formatCoordinate(x));
-  $('#poi-y').val(formatCoordinate(y));
+  $('#poi-x').val(formatCoordinate(adjustedX));
+  $('#poi-y').val(formatCoordinate(adjustedY));
 
   // Show the form
   $('#poi-form').show();

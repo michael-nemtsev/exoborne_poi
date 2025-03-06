@@ -11,7 +11,7 @@
 </head>
 <body>
   <div id="sidebar">
-    <h2>Exoborne World Maps</h2>
+    <h2 id="page-title">Exoborne World Maps</h2>
     <div class="controls">
       <button id="add-mode-btn">Add POI</button>
       <button id="refresh-btn">Refresh</button>
@@ -19,7 +19,6 @@
     </div>
 
     <div id="poi-form">
-      <h3>Add POI</h3>
       <label for="poi-type">Type:</label>
       <select id="poi-type">
         <option value="shelter">Rebirth Shelter</option>
@@ -51,7 +50,10 @@
     </div>
 
     <div id="poi-list">
-        <h3>Filter</h3>
+        <h3>
+            <span>Filter</span>
+            <button id="toggle-filter" style="float: right; padding: 0px 4px; font-size: 10px; background: none; margin: 0;">▼</button>
+        </h3>
         <div id="poi-groups-container">
             <div class="poi-group">
                 <div class="poi-group-header">
@@ -116,13 +118,13 @@
                     <button class="select-only-btn" data-type="loot">Only</button>
                 </div>
             </div>
-            <div class="filter-controls">
-                <button id="select-all-btn" class="filter-btn">Select All</button>
-                <button id="select-none-btn" class="filter-btn">Select None</button>
-            </div>
-            <div class="filter-controls" style="justify-content: center; margin-top: 10px;">
-                <button id="show-unapproved-btn" class="filter-btn" style="display: none;">Show Unapproved</button>
-            </div>
+        </div>
+        <div class="filter-controls">
+            <button id="select-all-btn" class="filter-btn">Select All</button>
+            <button id="select-none-btn" class="filter-btn">Select None</button>
+        </div>
+        <div class="filter-controls" style="justify-content: center; margin-top: 5px;">
+            <button id="show-unapproved-btn" class="filter-btn" style="display: none;">Show Unapproved</button>
         </div>
     </div>
 
