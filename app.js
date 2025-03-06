@@ -463,9 +463,15 @@ function togglePoiVisibility(id) {
 }
 
 function selectPoi(id) {
+  // If the POI is already selected, don't do anything
+  if (selectedPoi === id) return;
+  
   selectedPoi = id;
-  renderPois();
-
+  
+  // Update the visual state of all POI markers
+  $('.poi-marker').removeClass('selected');
+  $(`.poi-marker[data-id="${id}"]`).addClass('selected');
+  
   const poi = pois.find(p => p.id === id);
   if (poi) {
     const containerWidth = $('#map-container').width();
@@ -923,6 +929,18 @@ function saveEditedPoi() {
   selectPoi(poiId);
 }
 
+// Function to find overlapping POIs at a specific location
+function findOverlappingPois(x, y, threshold = 10) {
+  // Convert coordinates to screen coordinates
+  const screenX = (x / 1.664) + offsetX;
+  const screenY = (y / 1.664) + offsetY + MAP_HEIGHT;
+  
+  // Find all POIs that are within the threshold distance
+  return pois.filter(p => p.visible && 
+    Math.abs((p.x / 1.664) + offsetX - screenX) < threshold && 
+    Math.abs((p.y / 1.664) + offsetY + MAP_HEIGHT - screenY) < threshold);
+}
+
 // Rendering functions
 function renderPois() {
   $('.poi-marker').remove();
@@ -931,7 +949,15 @@ function renderPois() {
   const tooltip = $(`<div class="poi-tooltip"></div>`);
   $('body').append(tooltip);
 
-  pois.filter(p => p.visible).forEach(poi => {
+  // Sort POIs to ensure selected POI is rendered on top
+  const sortedPois = [...pois].sort((a, b) => {
+    // Selected POI should be last (rendered on top)
+    if (a.id === selectedPoi) return 1;
+    if (b.id === selectedPoi) return -1;
+    return 0;
+  });
+
+  sortedPois.filter(p => p.visible).forEach(poi => {
       const poiColor = getPoiColor(poi.type);
       
       // Calculate adjusted coordinates for each POI
@@ -943,7 +969,9 @@ function renderPois() {
 
       // Create POI marker with approval status indicator
       const marker = $(`
-          <div class="poi-marker ${poi.approved ? 'approved' : 'unapproved'}" data-id="${poi.id}" style="left: ${realX}px; top: ${realY}px;">
+          <div class="poi-marker ${poi.approved ? 'approved' : 'unapproved'} ${poi.id === selectedPoi ? 'selected' : ''}" 
+               data-id="${poi.id}" 
+               style="left: ${realX}px; top: ${realY}px;">
               <svg viewBox="0 0 24 24">
                   <path fill="${poiColor}" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                   ${!poi.approved ? '<circle cx="18" cy="6" r="5" fill="#ff5722" stroke="white" stroke-width="1" />' : ''}
@@ -998,6 +1026,67 @@ function renderPois() {
               visibility: 'hidden',
               opacity: 0
           });
+      });
+
+      // Add click handler for cycling through overlapping POIs
+      marker.on('click', function(e) {
+          e.stopPropagation(); // Prevent the map click handler from firing
+          
+          const clickedPoiId = $(this).data('id');
+          const clickedPoi = pois.find(p => p.id === clickedPoiId);
+          
+          if (clickedPoi) {
+              // Find all overlapping POIs
+              const overlappingPois = findOverlappingPois(clickedPoi.x, clickedPoi.y);
+              
+              if (overlappingPois.length > 1) {
+                  // If there are overlapping POIs and one is already selected
+                  if (selectedPoi) {
+                      // Find the index of the currently selected POI
+                      const currentIndex = overlappingPois.findIndex(p => p.id === selectedPoi);
+                      
+                      // Select the next POI in the list (or the first if at the end)
+                      const nextIndex = (currentIndex + 1) % overlappingPois.length;
+                      selectPoi(overlappingPois[nextIndex].id);
+                      
+                      // Show a notification about cycling
+                      if (overlappingPois.length > 2) {
+                          showNotification(`Cycling through ${overlappingPois.length} overlapping POIs (${nextIndex + 1}/${overlappingPois.length})`, false);
+                      }
+                  } else {
+                      // If no POI is selected, select the clicked one
+                      selectPoi(clickedPoiId);
+                      
+                      // Show a notification about multiple POIs
+                      if (overlappingPois.length > 1) {
+                          showNotification(`${overlappingPois.length} overlapping POIs found. Click again to cycle through them.`, false);
+                      }
+                  }
+              } else {
+                  // If there's only one POI, simply select it
+                  selectPoi(clickedPoiId);
+              }
+          }
+      });
+
+      // Add right-click handler for editing POIs
+      marker.on('contextmenu', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const poiId = $(this).data('id');
+          selectPoi(poiId); // Select the POI that was right-clicked
+          showEditContextMenu(poiId, e.pageX, e.pageY);
+      });
+
+      // Add double-click handler as an alternative way to edit POIs
+      marker.on('dblclick', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const poiId = $(this).data('id');
+          selectPoi(poiId); // Select the POI that was double-clicked
+          showEditContextMenu(poiId, e.pageX, e.pageY);
       });
 
       $('#game-map').append(marker);
@@ -1118,6 +1207,34 @@ $(document).ready(function () {
   $('#game-map').on('dblclick', function (e) {
     e.preventDefault();
     handleMapClick(e);
+  });
+
+  // Add event listener for regular click to deselect pins
+  $('#game-map').on('click', function (e) {
+    // Only proceed if we didn't click on a POI marker
+    if ($(e.target).closest('.poi-marker').length === 0) {
+      // Deselect any selected POI
+      if (selectedPoi) {
+        selectedPoi = null;
+        $('.poi-marker').removeClass('selected');
+      }
+    }
+  });
+  
+  // Add event listener for clicks on the map container (but outside the game-map)
+  $('#map-container').on('click', function (e) {
+    // Only handle clicks directly on the map container (not on its children)
+    // Also ignore clicks on map controls
+    if (e.target === this && !$(e.target).closest('.map-controls').length) {
+      // Check if we clicked on the coordinates display
+      if (!$(e.target).closest('#coordinates-display').length) {
+        // Deselect any selected POI
+        if (selectedPoi) {
+          selectedPoi = null;
+          $('.poi-marker').removeClass('selected');
+        }
+      }
+    }
   });
 
   $('#context-menu').on('click', function (e) {
@@ -1246,10 +1363,21 @@ function handleMapClick(e) {
   }
 
   if (clickedPoi.length) {
-    const poiId = clickedPoi.data('id');
-    showEditContextMenu(poiId, e.pageX, e.pageY);
+    // POI clicks are now handled by the POI marker click handler
+    // This prevents double handling of the click event
+    return;
   } else {
-    showContextMenu(e.pageX, e.pageY, clickX, clickY);
+    // If clicking on empty space, deselect any selected POI
+    if (selectedPoi) {
+      selectedPoi = null;
+      $('.poi-marker').removeClass('selected');
+    }
+    
+    // Only show context menu for right-click or double-click
+    // This is determined by the event type that triggered this function
+    if (e.type === 'contextmenu' || e.type === 'dblclick') {
+      showContextMenu(e.pageX, e.pageY, clickX, clickY);
+    }
   }
 }
 
