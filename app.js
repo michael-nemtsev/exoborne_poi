@@ -953,20 +953,44 @@ function renderPois() {
 
       // Show tooltip with approval status
       marker.on('mouseenter', function (e) {
-          const approvalText = poi.approved ? '' : '<div class="approval-status">[Awaiting Approval]</div>';
-          tooltip.html(`<div class="tooltip-description">${poi.description}</div>${approvalText}`);
+          let shouldShowTooltip = false;
+          let tooltipContent = '';
           
-          // Calculate position above the marker
-          const markerRect = this.getBoundingClientRect();
-          const tooltipX = markerRect.left + (markerRect.width / 2);
-          const tooltipY = markerRect.top;
+          // Determine if and what tooltip content to show
+          if (poi.description && poi.description.trim() !== '') {
+              // Show description and approval status if needed
+              const approvalText = poi.approved ? '' : '<div class="approval-status">[Awaiting Approval]</div>';
+              tooltipContent = `<div class="tooltip-description">${poi.description}</div>${approvalText}`;
+              shouldShowTooltip = true;
+          } else if (!poi.approved) {
+              // If no description but awaiting approval, only show approval status
+              tooltipContent = '<div class="approval-status">[Awaiting Approval]</div>';
+              shouldShowTooltip = true;
+          }
           
-          tooltip.css({
-              left: tooltipX + 'px',
-              top: tooltipY + 'px',
-              visibility: 'visible',
-              opacity: 1
-          });
+          if (shouldShowTooltip) {
+              // Update tooltip content
+              tooltip.html(tooltipContent);
+              
+              // Calculate position above the marker
+              const markerRect = this.getBoundingClientRect();
+              const tooltipX = markerRect.left + (markerRect.width / 2);
+              const tooltipY = markerRect.top;
+              
+              // Show tooltip
+              tooltip.css({
+                  left: tooltipX + 'px',
+                  top: tooltipY + 'px',
+                  visibility: 'visible',
+                  opacity: 1
+              });
+          } else {
+              // Hide tooltip if no content to show
+              tooltip.css({
+                  visibility: 'hidden',
+                  opacity: 0
+              });
+          }
       });
 
       marker.on('mouseleave', function () {
