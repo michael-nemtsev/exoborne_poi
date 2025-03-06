@@ -444,5 +444,79 @@
     "approved": true,
     "dateAdded": "2025-03-06T09:29:54.283Z",
     "sessionId": "session-1741244565382-487g7rr5nnt"
+  },
+  {
+    "id": "poi-1741200424872",
+    "name": "Loot",
+    "type": "loot",
+    "description": "several boxes next to a car",
+    "x": "+0309",
+    "y": "-1197",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-05T18:47:04.872Z",
+    "lastEdited": "2025-03-06T14:33:01.559Z"
+  },
+  {
+    "id": "poi-1741238927152",
+    "name": "Loot",
+    "type": "loot",
+    "description": "2-3 boxes behind a track",
+    "x": "+1983",
+    "y": "-1288",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T05:28:47.152Z",
+    "lastEdited": "2025-03-06T14:46:25.409Z"
+  },
+  {
+    "id": "poi-1741272717688",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "-0186",
+    "y": "-0502",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T14:51:57.688Z",
+    "sessionId": "session-1741263341665-ydupvkap1xl"
+  },
+  {
+    "id": "poi-1741272826670",
+    "name": "Bunker",
+    "type": "bunker",
+    "description": "Tier 2 - near a garage",
+    "x": "-0112",
+    "y": "-0468",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T14:53:46.670Z",
+    "sessionId": "session-1741263341665-ydupvkap1xl",
+    "lastEdited": "2025-03-06T14:53:56.496Z"
+  },
+  {
+    "id": "poi-1741188682358",
+    "name": "POI-2358",
+    "type": "shelter",
+    "description": "Tier 3",
+    "x": "+0077",
+    "y": "-0472",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-05T15:31:22.358Z",
+    "lastEdited": "2025-03-06T14:56:38.820Z"
+  },
+  {
+    "id": "poi-1741273883135",
+    "name": "Loot",
+    "type": "loot",
+    "description": "near a car",
+    "x": "+0712",
+    "y": "+0057",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T15:11:23.135Z",
+    "sessionId": "session-1741263341665-ydupvkap1xl",
+    "lastEdited": "2025-03-06T15:11:37.131Z"
   }
 ]

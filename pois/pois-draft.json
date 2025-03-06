@@ -31,17 +31,6 @@
     "dateAdded": "2025-03-05T15:29:13.040Z"
   },
   {
-    "id": "poi-1741188569743",
-    "name": "POI-9743",
-    "type": "bunker",
-    "description": "",
-    "x": "-0130",
-    "y": "-0461",
-    "visible": true,
-    "approved": false,
-    "dateAdded": "2025-03-05T15:29:29.743Z"
-  },
-  {
     "id": "poi-1741188592182",
     "name": "POI-2182",
     "type": "bunker",
@@ -62,17 +51,6 @@
     "visible": true,
     "approved": false,
     "dateAdded": "2025-03-05T15:30:09.928Z"
-  },
-  {
-    "id": "poi-1741188682358",
-    "name": "POI-2358",
-    "type": "shelter",
-    "description": "",
-    "x": "+0077",
-    "y": "-0472",
-    "visible": true,
-    "approved": false,
-    "dateAdded": "2025-03-05T15:31:22.358Z"
   },
   {
     "id": "poi-1741188692145",
@@ -163,17 +141,6 @@
     "dateAdded": "2025-03-06T10:00:00.000Z"
   },
   {
-    "id": "poi-1741200424872",
-    "name": "Loot",
-    "type": "loot",
-    "description": "box",
-    "x": "+0309",
-    "y": "-1197",
-    "visible": true,
-    "approved": false,
-    "dateAdded": "2025-03-05T18:47:04.872Z"
-  },
-  {
     "id": "poi-1741200489133",
     "name": "Loot",
     "type": "loot",
@@ -228,17 +195,6 @@
     "approved": false,
     "dateAdded": "2025-03-06T05:26:29.640Z",
     "lastEdited": "2025-03-06T08:39:07.749Z"
-  },
-  {
-    "id": "poi-1741238927152",
-    "name": "Loot",
-    "type": "loot",
-    "description": "2-3 boxes behind the track",
-    "x": "+1983",
-    "y": "-1288",
-    "visible": true,
-    "approved": false,
-    "dateAdded": "2025-03-06T05:28:47.152Z"
   },
   {
     "id": "poi-1741239183695",
@@ -308,5 +264,29 @@
     "dateAdded": "2025-03-06T09:30:43.363Z",
     "sessionId": "session-1741244565382-487g7rr5nnt",
     "lastEdited": "2025-03-06T09:32:56.371Z"
+  },
+  {
+    "id": "poi-1741272993675",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+0002",
+    "y": "-0481",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T14:56:33.675Z",
+    "sessionId": "session-1741263341665-ydupvkap1xl"
+  },
+  {
+    "id": "poi-1741273413855",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+0288",
+    "y": "-0450",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T15:03:33.855Z",
+    "sessionId": "session-1741263341665-ydupvkap1xl"
   }
 ]
