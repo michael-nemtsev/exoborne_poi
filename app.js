@@ -1007,7 +1007,10 @@ function renderPois() {
                data-id="${poi.id}" 
                style="left: ${realX}px; top: ${realY}px;">
               <svg viewBox="0 0 24 24">
-                  <path fill="${poiColor}" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  <path fill="transparent" 
+                        stroke="${poiColor}" 
+                        stroke-width="1.5"
+                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                   ${!poi.approved ? '<circle cx="18" cy="6" r="5" fill="#ff5722" stroke="white" stroke-width="1" />' : ''}
               </svg>
           </div>
@@ -1135,6 +1138,9 @@ $('head').append(`
       .poi-marker.unapproved svg {
           filter: saturate(0.7);
       }
+      .poi-marker.unapproved svg path {
+          stroke-dasharray: 2, 1;
+      }
   </style>
 `);
 
@@ -1142,14 +1148,14 @@ function getPoiColor(type) {
   const normalizedType = String(type).toLowerCase().trim();
   switch (normalizedType) {
     case 'shelter': return '#ffd700'; // Gold for Rebirth Shelter
-    case 'bunker': return '#b8860b'; // Dark gold for Rebirth Bunker
-    case 'fragment': return '#73a575';
-    case 'machinery': return '#d3d3d3'; // Light gray for Machinery Parts
-    case 'electronics': return '#2196f3';
-    case 'secret': return '#607d8b';
-    case 'ec-kits': return '#d8b4e2'; // Light purple for EC Kits
-    case 'collectibles': return '#FFB6C1'; // Light pink for Collectibles
-    case 'loot': return '#9c27b0'; // Purple for Loot
+    case 'bunker': return '#ff8c00'; // Dark orange for Rebirth Bunker (more visible than dark gold)
+    case 'fragment': return '#32cd32'; // Lime green (more vibrant than previous green)
+    case 'machinery': return '#a9a9a9'; // Darker gray for Machinery Parts (more visible)
+    case 'electronics': return '#1e90ff'; // Dodger blue (slightly more vibrant)
+    case 'secret': return '#4682b4'; // Steel blue (more vibrant than previous gray-blue)
+    case 'ec-kits': return '#da70d6'; // Orchid (more vibrant than light purple)
+    case 'collectibles': return '#ff69b4'; // Hot pink (more vibrant than light pink)
+    case 'loot': return '#9932cc'; // Dark orchid (more vibrant purple)
     default:
       console.log('Unknown POI type:', type);
       return '#ffffff';
@@ -1377,14 +1383,9 @@ $(document).ready(function () {
 
   $('#map-container').on('mousemove', function (e) {
     const mapOffset = $('#game-map').offset();
-
-    // Calculate coordinates relative to the map, adjusted for zoom and pan
     const mapX = Math.round((e.pageX - mapOffset.left) / currentZoom);
-
-    // For Y coordinate, we need to flip it since we want 0 at the bottom
-    // We calculate from the top, then subtract from the total height to get from bottom
     const mapY = Math.round(((e.pageY - mapOffset.top) / currentZoom) - MAP_HEIGHT);
-
+  
     // Apply the offsets
     const adjustedX = (mapX - offsetX) * 1.664;
     const adjustedY = (mapY - offsetY) * 1.664;

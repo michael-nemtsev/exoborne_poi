@@ -183,6 +183,23 @@
     height: 100%;
   }
   
+  /* Increase stroke width for better visibility with transparent bodies */
+  .poi-marker svg path {
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+  
+  /* Add hover effect to make pins more noticeable */
+  .poi-marker:hover {
+    transform: scale(1.2);
+    transition: transform 0.2s ease-in-out;
+    z-index: 10;
+  }
+  
+  .poi-marker:hover svg path {
+    stroke-width: 2;
+  }
+  
   .poi-tooltip {
     position: fixed;
     transform: translateX(-50%) translateY(-100%);
@@ -222,7 +239,8 @@
   
   .poi-marker.selected svg path {
     stroke: white;
-    stroke-width: 1;
+    stroke-width: 2.5;
+    fill: rgba(255, 255, 255, 0.2); /* Semi-transparent white fill for selected markers */
   }
   
   #poi-list {
