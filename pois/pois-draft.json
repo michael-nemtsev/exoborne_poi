@@ -119,18 +119,6 @@
     "dateAdded": "2025-03-05T15:32:09.083Z"
   },
   {
-    "id": "poi-1741188741203",
-    "name": "POI-1203",
-    "type": "shelter",
-    "description": "T?",
-    "x": "+2008",
-    "y": "-1359",
-    "visible": true,
-    "approved": false,
-    "dateAdded": "2025-03-05T15:32:21.203Z",
-    "lastEdited": "2025-03-05T15:42:04.707Z"
-  },
-  {
     "id": "poi-1741189524488",
     "name": "POI-4488",
     "type": "secret",
@@ -217,5 +205,93 @@
     "visible": true,
     "approved": false,
     "dateAdded": "2025-03-05T19:14:00.176Z"
+  },
+  {
+    "id": "poi-1741238676896",
+    "name": "Loot",
+    "type": "loot",
+    "description": "box and luggage",
+    "x": "+1860",
+    "y": "-1171",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T05:24:36.896Z"
+  },
+  {
+    "id": "poi-1741238789639",
+    "name": "Loot",
+    "type": "loot",
+    "description": "two luggages",
+    "x": "+1862",
+    "y": "-1302",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T05:26:29.640Z"
+  },
+  {
+    "id": "poi-1741238927152",
+    "name": "Loot",
+    "type": "loot",
+    "description": "2-3 boxes behind the track",
+    "x": "+1983",
+    "y": "-1288",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T05:28:47.152Z"
+  },
+  {
+    "id": "poi-1741239094151",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+1992",
+    "y": "-1340",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T05:31:34.151Z"
+  },
+  {
+    "id": "poi-1741239183695",
+    "name": "Loot",
+    "type": "loot",
+    "description": "near the car",
+    "x": "+2032",
+    "y": "-1317",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T05:33:03.695Z"
+  },
+  {
+    "id": "poi-1741239247272",
+    "name": "Loot",
+    "type": "loot",
+    "description": "few items inside the shed",
+    "x": "+2059",
+    "y": "-1268",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T05:34:07.272Z"
+  },
+  {
+    "id": "poi-1741239501461",
+    "name": "Loot",
+    "type": "loot",
+    "description": "2 boxes and free loot",
+    "x": "+2092",
+    "y": "-1211",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T05:38:21.461Z"
+  },
+  {
+    "id": "poi-1741239696337",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+1842",
+    "y": "-0674",
+    "visible": true,
+    "approved": false,
+    "dateAdded": "2025-03-06T05:41:36.337Z"
   }
 ]

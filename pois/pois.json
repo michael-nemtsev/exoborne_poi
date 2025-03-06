@@ -353,5 +353,49 @@
     "visible": true,
     "approved": true,
     "dateAdded": "2025-03-06T04:25:09.681Z"
+  },
+  {
+    "id": "poi-1741238858924",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+1987",
+    "y": "-1282",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T05:27:38.924Z"
+  },
+  {
+    "id": "poi-1741239564634",
+    "name": "Shelter",
+    "type": "shelter",
+    "description": "Level 3",
+    "x": "+2162",
+    "y": "-1059",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T05:39:24.634Z"
+  },
+  {
+    "id": "poi-1741239844771",
+    "name": "Fragment",
+    "type": "fragment",
+    "description": "",
+    "x": "+1593",
+    "y": "-0411",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T05:44:04.771Z"
+  },
+  {
+    "id": "poi-1741239124667",
+    "name": "Shelter",
+    "type": "shelter",
+    "description": "Level 3",
+    "x": "+2005",
+    "y": "-1355",
+    "visible": true,
+    "approved": true,
+    "dateAdded": "2025-03-06T05:32:04.668Z"
   }
 ]
