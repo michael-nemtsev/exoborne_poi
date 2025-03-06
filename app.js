@@ -540,6 +540,9 @@ function savePoi() {
     $('#add-mode-btn').removeClass('active');
     $('#game-map').css('cursor', 'move');
     
+    // Hide the context menu
+    $('#context-menu').hide();
+    
     showNotification('POI added successfully (awaiting approval)');
     
     return;
@@ -579,12 +582,18 @@ function savePoi() {
   $('#add-mode-btn').removeClass('active');
   $('#game-map').css('cursor', 'move');
 
+  // Hide the context menu
+  $('#context-menu').hide();
+
   showNotification('POI added successfully (awaiting approval)');
 }
 
 function cancelAddPoi() {
   $('#poi-form').hide();
   tempPoi = null;
+  
+  // Hide the context menu
+  $('#context-menu').hide();
 }
 
 function togglePoiVisibility(id) {
