@@ -510,6 +510,11 @@ function toggleAddMode() {
     $('#poi-y').val('');
     $('#poi-desc').val('');
     showNotification('Click on the map to add a POI or enter coordinates manually');
+
+    // Hide heatmap overlay when adding POIs
+    if (isHeatmapVisible) {
+      toggleHeatmap();
+    }
   } else {
     $('#game-map').css('cursor', 'move');
     $('#poi-form').hide();
