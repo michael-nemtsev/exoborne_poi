@@ -3,7 +3,14 @@ let offsetX = 602; // Change this to your desired X offset
 let offsetY = -248; // Change this to your desired Y offset
 
 // Configuration
-const API_ENDPOINT = 'http://localhost:8080/api'; // Update to match Node.js server URL
+// Determine if we're running locally or in production (Azure)
+const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.hostname.includes('192.168.');
+
+// Use localhost URL for local development, just '/api' for production
+const API_ENDPOINT = isLocalhost ? 'http://localhost:8080/api' : '/api';
+
 const MAP_WIDTH = 2000;
 const MAP_HEIGHT = 1430;
 const STORAGE_KEY = 'game_map_pois';
