@@ -160,17 +160,6 @@
     "approved": true
   },
   {
-    "id": "poi-1741159859461",
-    "name": "POI-9461",
-    "type": "bunker",
-    "description": "vd",
-    "x": 580.7999992370605,
-    "y": 461.8000183105469,
-    "visible": true,
-    "approved": true,
-    "dateAdded": "2025-03-05T07:30:59.461Z"
-  },
-  {
     "id": "poi-1741183808070",
     "name": "POI-8070",
     "type": "fragment",
