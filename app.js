@@ -108,6 +108,9 @@ function initMap() {
 
   // Center the map initially
   resetMapView();
+  
+  // Initialize zoom indicator
+  updateZoomIndicator();
 
   // Mouse events for dragging
   mapElement.on('mousedown', startDragging);
@@ -115,8 +118,18 @@ function initMap() {
   $(document).on('mouseup', stopDragging);
 
   // Map controls
-  $('#zoom-in').on('click', () => changeZoom(0.1));
-  $('#zoom-out').on('click', () => changeZoom(-0.1));
+  $('#zoom-in').on('click', () => {
+    const containerWidth = $('#map-container').width();
+    const containerHeight = $('#map-container').height();
+    changeZoom(0.2, containerWidth / 2, containerHeight / 2);
+  });
+
+  $('#zoom-out').on('click', () => {
+    const containerWidth = $('#map-container').width();
+    const containerHeight = $('#map-container').height();
+    changeZoom(-0.2, containerWidth / 2, containerHeight / 2);
+  });
+
   $('#reset-view').on('click', resetMapView);
 
   // POI controls
@@ -288,15 +301,25 @@ function stopDragging() {
   $('#game-map').css('cursor', 'move');
 }
 
-function changeZoom(delta) {
+function changeZoom(delta, cursorX, cursorY) {
   const oldZoom = currentZoom;
-  currentZoom = Math.max(0.2, Math.min(2, currentZoom + delta));
+  
+  // Update max zoom to 4 (2x beyond native resolution)
+  currentZoom = Math.max(0.2, Math.min(4, currentZoom + delta));
 
   const containerWidth = $('#map-container').width();
   const containerHeight = $('#map-container').height();
 
-  const centerX = containerWidth / 2;
-  const centerY = containerHeight / 2;
+  // If cursor position is provided, zoom towards that point
+  // Otherwise, zoom towards the center of the viewport
+  let centerX, centerY;
+  if (cursorX !== undefined && cursorY !== undefined) {
+    centerX = cursorX;
+    centerY = cursorY;
+  } else {
+    centerX = containerWidth / 2;
+    centerY = containerHeight / 2;
+  }
 
   const centerMapX = centerX / oldZoom - mapPosition.x;
   const centerMapY = centerY / oldZoom - mapPosition.y;
@@ -321,14 +344,22 @@ function changeZoom(delta) {
   }
 
   updateMapTransform();
+  
+  // Update zoom level indicator if it exists
+  updateZoomIndicator();
 }
 
 function updateMapTransform() {
-  $('#game-map').css('transform', 
-    `scale(${currentZoom}) 
-    translate(${mapPosition.x}px, 
-    ${mapPosition.y}px)`);
-
+  // Add transition for smoother zooming
+  $('#game-map').css({
+    'transition': 'transform 0.2s ease-out',
+    'transform': `scale(${currentZoom}) translate(${mapPosition.x}px, ${mapPosition.y}px)`
+  });
+  
+  // Remove transition after a short delay to avoid affecting dragging
+  setTimeout(() => {
+    $('#game-map').css('transition', 'none');
+  }, 200);
 }
 
 function resetMapView() {
@@ -341,6 +372,9 @@ function resetMapView() {
   mapPosition.y = (containerHeight / currentZoom - MAP_HEIGHT) / 2;
 
   updateMapTransform();
+  
+  // Update zoom indicator
+  updateZoomIndicator();
 }
 
 // POI management functions
@@ -1261,8 +1295,22 @@ $(document).ready(function () {
 
   $('#map-container').on('wheel', function (e) {
     e.preventDefault();
-    const delta = e.originalEvent.deltaY > 0 ? -0.1 : 0.1;
-    changeZoom(delta);
+    
+    // Calculate zoom delta based on wheel direction and current zoom level
+    // This makes zooming more responsive at different zoom levels
+    const zoomFactor = 0.15; // Base zoom factor
+    const direction = e.originalEvent.deltaY > 0 ? -1 : 1;
+    
+    // Scale the zoom factor based on current zoom level
+    // This makes zooming more precise at higher zoom levels
+    const scaledDelta = direction * zoomFactor * (currentZoom < 1 ? 0.5 : 1);
+    
+    // Get cursor position relative to the map container
+    const cursorX = e.pageX - $(this).offset().left;
+    const cursorY = e.pageY - $(this).offset().top;
+    
+    // Pass cursor position to changeZoom for zooming towards cursor
+    changeZoom(scaledDelta, cursorX, cursorY);
   });
 
   $('.group-checkbox').on('change', function () {
@@ -1341,8 +1389,16 @@ $(document).ready(function () {
     const adjustedX = (mapX - offsetX) * 1.664;
     const adjustedY = (mapY - offsetY) * 1.664;
 
+    // Determine precision based on zoom level
+    // Higher zoom = more decimal places
+    const precision = currentZoom > 2 ? 2 : (currentZoom > 1 ? 1 : 0);
+    
+    // Format coordinates with appropriate precision
+    const formattedX = formatCoordinateWithPrecision(adjustedX, precision);
+    const formattedY = formatCoordinateWithPrecision(adjustedY, precision);
+
     // Update the display with the adjusted coordinates
-    $('#coordinates-display').text(`X: ${formatCoordinate(adjustedX)}, Y: ${formatCoordinate(adjustedY)}`);
+    $('#coordinates-display').text(`X: ${formattedX}, Y: ${formattedY}`);
   });
 
   $('#game-map').on('mousemove', function (e) {
@@ -1408,4 +1464,59 @@ function handleAddModeClick(e) {
 
   // Show the form if it's not already visible
   $('#poi-form').show();
+}
+
+// Function to update zoom level indicator
+function updateZoomIndicator() {
+  // Create zoom indicator if it doesn't exist
+  if ($('#zoom-level').length === 0) {
+    const zoomIndicator = $('<div id="zoom-level"></div>');
+    zoomIndicator.css({
+      'position': 'absolute',
+      'bottom': '10px',
+      'left': '10px',
+      'background-color': 'rgba(0, 0, 0, 0.7)',
+      'color': 'white',
+      'padding': '5px 10px',
+      'border-radius': '4px',
+      'z-index': '20',
+      'font-size': '14px'
+    });
+    $('#map-container').append(zoomIndicator);
+  }
+  
+  // Update zoom level text
+  const zoomPercent = Math.round(currentZoom * 100);
+  $('#zoom-level').text(`Zoom: ${zoomPercent}%`);
+}
+
+// Add keyboard shortcuts for zooming
+$(document).on('keydown', function(e) {
+  // Only handle keyboard shortcuts if not typing in an input field
+  if (!$(e.target).is('input, textarea, select')) {
+    const containerWidth = $('#map-container').width();
+    const containerHeight = $('#map-container').height();
+    
+    // Plus key (+) to zoom in
+    if (e.key === '+' || e.key === '=') {
+      e.preventDefault();
+      changeZoom(0.2, containerWidth / 2, containerHeight / 2);
+    }
+    // Minus key (-) to zoom out
+    else if (e.key === '-' || e.key === '_') {
+      e.preventDefault();
+      changeZoom(-0.2, containerWidth / 2, containerHeight / 2);
+    }
+    // 0 key to reset view
+    else if (e.key === '0') {
+      e.preventDefault();
+      resetMapView();
+    }
+  }
+});
+
+// Format coordinate with specified decimal precision
+function formatCoordinateWithPrecision(value, precision) {
+  const sign = value >= 0 ? '+' : '';
+  return sign + value.toFixed(precision);
 }
