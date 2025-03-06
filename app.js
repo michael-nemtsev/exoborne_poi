@@ -604,10 +604,26 @@ function selectPoi(id) {
   
   // Update the visual state of all POI markers
   $('.poi-marker').removeClass('selected');
-  $(`.poi-marker[data-id="${id}"]`).addClass('selected');
+  const selectedMarker = $(`.poi-marker[data-id="${id}"]`);
+  selectedMarker.addClass('selected');
   
   const poi = pois.find(p => p.id === id);
   if (poi) {
+    // Get the color for this POI type
+    const poiColor = getPoiColor(poi.type);
+    
+    // Set custom properties for the glow effect
+    // Convert hex color to rgba for the glow and fill
+    const colorValues = hexToRgb(poiColor);
+    if (colorValues) {
+      // Set the glow color (more opaque)
+      selectedMarker.css('--poi-glow-color', `rgba(${colorValues.r}, ${colorValues.g}, ${colorValues.b}, 0.8)`);
+      // Set the stroke color (solid)
+      selectedMarker.css('--poi-stroke-color', poiColor);
+      // Set the fill color (semi-transparent)
+      selectedMarker.css('--poi-fill-color', `rgba(${colorValues.r}, ${colorValues.g}, ${colorValues.b}, 0.2)`);
+    }
+    
     const containerWidth = $('#map-container').width();
     const containerHeight = $('#map-container').height();
     const poiScreenX = poi.x * currentZoom + mapPosition.x * currentZoom;
@@ -628,6 +644,32 @@ function selectPoi(id) {
     }
     */
   }
+}
+
+// Helper function to convert hex color to RGB components
+function hexToRgb(hex) {
+  // Remove # if present
+  hex = hex.replace(/^#/, '');
+  
+  // Parse hex values
+  let bigint = parseInt(hex, 16);
+  
+  // Handle different hex formats (3 or 6 digits)
+  if (hex.length === 3) {
+    // For 3-digit hex, duplicate each digit
+    const r = ((bigint >> 8) & 15) * 17;
+    const g = ((bigint >> 4) & 15) * 17;
+    const b = (bigint & 15) * 17;
+    return { r, g, b };
+  } else if (hex.length === 6) {
+    // For 6-digit hex
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return { r, g, b };
+  }
+  
+  return null;
 }
 
 function deletePoi(poiId) {
@@ -1119,7 +1161,6 @@ function renderPois() {
                         stroke="${poiColor}" 
                         stroke-width="1.5"
                         d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                  ${!poi.approved ? '<circle cx="18" cy="6" r="5" fill="#ff5722" stroke="white" stroke-width="1" />' : ''}
                   ${isCurrentSession ? '<circle cx="6" cy="6" r="3" fill="#4CAF50" stroke="white" stroke-width="0.5" />' : ''}
               </svg>
           </div>
@@ -1630,13 +1671,13 @@ function showSessionManagement() {
   // Create session management UI if it doesn't exist
   if ($('#session-management').length === 0) {
     const sessionUI = $(`
-      <div id="session-management" style="position: absolute; top: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; border-radius: 4px; z-index: 20; font-size: 14px; max-width: 250px;">
+      <div id="session-management" style="position: absolute; top: 50px; left: 10px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; border-radius: 4px; z-index: 20; font-size: 14px; max-width: 250px;">
         <h3 style="margin: 0 0 10px 0; font-size: 16px;">Session Management</h3>
         <p style="margin: 0 0 10px 0; font-size: 12px;">
           You can delete POIs you created in this session. They are marked with a green dot.
         </p>
         <div style="margin: 0 0 10px 0; font-size: 11px; color: #aaa;">
-          This popup will automatically close in <span id="session-timer">10</span> seconds.
+          This popup will automatically close in <span id="session-timer">5</span> seconds.
         </div>
         <button id="new-session-btn" style="background-color: #4CAF50; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Start New Session</button>
         <button id="hide-session-ui-btn" style="background-color: #607d8b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px;">Hide</button>
@@ -1696,7 +1737,7 @@ function resetSessionUITimer() {
     clearTimeout(window.sessionUITimer);
   }
   
-  let secondsLeft = 10;
+  let secondsLeft = 5;
   
   // Update the timer text
   $('#session-timer').text(secondsLeft);
@@ -1715,7 +1756,7 @@ function resetSessionUITimer() {
   window.sessionUITimer = setTimeout(function() {
     $('#session-management').fadeOut(500);
     clearInterval(countdownInterval);
-  }, 10000);
+  }, 5000);
 }
 
 // Format coordinate with specified decimal precision
