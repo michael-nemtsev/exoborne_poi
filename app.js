@@ -11,6 +11,7 @@ const DEFAULT_ZOOM = 1;
 
 // State management
 let pois = [];
+let isHeatmapVisible = false;
 
 let currentZoom = DEFAULT_ZOOM;
 let isDragging = false;
@@ -106,6 +107,18 @@ function initMap() {
     transform: `scale(${currentZoom}) translate(${mapPosition.x}px, ${mapPosition.y}px)`
   });
 
+  // Set up heatmap overlay with the same dimensions as the main map
+  const heatmapOverlay = $('#heatmap-overlay');
+  heatmapOverlay.css({
+    width: MAP_WIDTH + 'px',
+    height: MAP_HEIGHT + 'px',
+    backgroundImage: 'url(maps/Heatmap_Maynard_Transparent_v2.png)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    opacity: 0.7,
+    transform: `scale(${currentZoom}) translate(${mapPosition.x}px, ${mapPosition.y}px)`
+  });
+
   // Center the map initially
   resetMapView();
   
@@ -131,6 +144,9 @@ function initMap() {
   });
 
   $('#reset-view').on('click', resetMapView);
+
+  // Heatmap toggle
+  $('#toggle-heatmap').on('click', toggleHeatmap);
 
   // POI controls
   $('#add-mode-btn').on('click', toggleAddMode);
@@ -356,9 +372,16 @@ function updateMapTransform() {
     'transform': `scale(${currentZoom}) translate(${mapPosition.x}px, ${mapPosition.y}px)`
   });
   
+  // Apply the same transform to the heatmap overlay
+  $('#heatmap-overlay').css({
+    'transition': 'transform 0.2s ease-out',
+    'transform': `scale(${currentZoom}) translate(${mapPosition.x}px, ${mapPosition.y}px)`
+  });
+  
   // Remove transition after a short delay to avoid affecting dragging
   setTimeout(() => {
     $('#game-map').css('transition', 'none');
+    $('#heatmap-overlay').css('transition', 'none');
   }, 200);
 }
 
@@ -1519,4 +1542,11 @@ $(document).on('keydown', function(e) {
 function formatCoordinateWithPrecision(value, precision) {
   const sign = value >= 0 ? '+' : '';
   return sign + value.toFixed(precision);
+}
+
+// Toggle heatmap visibility
+function toggleHeatmap() {
+  isHeatmapVisible = !isHeatmapVisible;
+  $('#heatmap-overlay').toggle(isHeatmapVisible);
+  $('#toggle-heatmap').toggleClass('active', isHeatmapVisible);
 }
