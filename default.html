@@ -187,6 +187,7 @@
 
   <div id="map-container">
     <div id="heatmap-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; transform-origin: 0 0;"></div>
+    <div id="guide-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 11; transform-origin: 0 0;"></div>
     <div class="watermark"></div>
     <div id="coordinates-display" style="position: absolute; top: 10px; left: 10px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 5px 10px; border-radius: 4px; z-index: 20; font-size: 14px;">
       X: 0, Y: 0
@@ -202,6 +203,7 @@
 
     <div class="left-controls">
       <button id="toggle-heatmap" title="Toggle Players Heatmap">🌡️</button>
+      <button id="toggle-guide" title="Toggle Guide Tips">💡</button>
     </div>
 
     <div id="game-map"></div>
@@ -230,10 +232,10 @@
       z-index: 20;
     }
 
-    #toggle-heatmap {
+    #toggle-heatmap,
+    #toggle-guide {
       width: 36px;
       height: 36px;
-      background-color: #ff4444;
       color: white;
       border: none;
       border-radius: 4px;
@@ -245,19 +247,43 @@
       font-size: 20px;
       padding: 0;
     }
+
+    #toggle-heatmap {
+      background-color: #ff4444;
+    }
+    
+    #toggle-guide {
+      background-color: #ffa726;
+    }
     
     #toggle-heatmap:hover {
       background-color: #ff6666;
+    }
+
+    #toggle-guide:hover {
+      background-color: #ffb74d;
     }
     
     #toggle-heatmap.active {
       background-color: #4CAF50;
     }
-    
-    #toggle-heatmap.active:hover {
-      background-color: #45a049;
+
+    #toggle-guide.active {
+      background-color: #4CAF50;
     }
     
+    #toggle-heatmap.active:hover,
+    #toggle-guide.active:hover {
+      background-color: #45a049;
+    }
+
+    #guide-overlay {
+      background-image: url(maps/Maynard_Transparent_Guide.png);
+      background-size: cover;
+      background-position: center;
+      opacity: 0.9;
+    }
+
     .map-selector {
       margin-bottom: 10px;
       width: 100%;

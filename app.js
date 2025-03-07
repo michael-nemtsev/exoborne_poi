@@ -21,6 +21,7 @@ const DEFAULT_ZOOM = 1;
 let pois = [];
 let sessionId = '';
 let isHeatmapVisible = false;
+let isGuideVisible = false;
 
 let currentZoom = DEFAULT_ZOOM;
 let isDragging = false;
@@ -209,8 +210,10 @@ function initMap() {
   // Initialize session ID
   initSessionId();
 
-  // Set up heatmap overlay with the same dimensions as the main map
+  // Set up overlays with the same dimensions as the main map
   const heatmapOverlay = $('#heatmap-overlay');
+  const guideOverlay = $('#guide-overlay');
+  
   heatmapOverlay.css({
     width: MAP_WIDTH + 'px',
     height: MAP_HEIGHT + 'px',
@@ -218,6 +221,16 @@ function initMap() {
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     opacity: 0.7,
+    transform: `scale(${currentZoom}) translate(${mapPosition.x}px, ${mapPosition.y}px)`
+  });
+
+  guideOverlay.css({
+    width: MAP_WIDTH + 'px',
+    height: MAP_HEIGHT + 'px',
+    backgroundImage: 'url(maps/Maynard_Transparent_Guide.png)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    opacity: 0.9,
     transform: `scale(${currentZoom}) translate(${mapPosition.x}px, ${mapPosition.y}px)`
   });
 
@@ -252,6 +265,9 @@ function initMap() {
 
   // Heatmap toggle
   $('#toggle-heatmap').on('click', toggleHeatmap);
+
+  // Guide toggle
+  $('#toggle-guide').on('click', toggleGuide);
 
   // POI controls
   $('#add-mode-btn').on('click', toggleAddMode);
@@ -481,8 +497,8 @@ function updateMapTransform() {
     'transform': `scale(${currentZoom}) translate(${mapPosition.x}px, ${mapPosition.y}px)`
   });
   
-  // Apply the same transform to the heatmap overlay
-  $('#heatmap-overlay').css({
+  // Apply the same transform to both overlays
+  $('#heatmap-overlay, #guide-overlay').css({
     'transition': 'transform 0.2s ease-out',
     'transform': `scale(${currentZoom}) translate(${mapPosition.x}px, ${mapPosition.y}px)`
   });
@@ -490,7 +506,7 @@ function updateMapTransform() {
   // Remove transition after a short delay to avoid affecting dragging
   setTimeout(() => {
     $('#game-map').css('transition', 'none');
-    $('#heatmap-overlay').css('transition', 'none');
+    $('#heatmap-overlay, #guide-overlay').css('transition', 'none');
   }, 200);
 }
 
@@ -1963,4 +1979,11 @@ function toggleHeatmap() {
   isHeatmapVisible = !isHeatmapVisible;
   $('#heatmap-overlay').toggle(isHeatmapVisible);
   $('#toggle-heatmap').toggleClass('active', isHeatmapVisible);
+}
+
+// Toggle guide visibility
+function toggleGuide() {
+  isGuideVisible = !isGuideVisible;
+  $('#guide-overlay').toggle(isGuideVisible);
+  $('#toggle-guide').toggleClass('active', isGuideVisible);
 }
